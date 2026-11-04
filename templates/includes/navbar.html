@@ -1,0 +1,26 @@
+<header>
+  <nav class="navbar navbar-expand-lg border-bottom" aria-label="Primary navigation">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">ProjectMate</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse" id="main-nav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{% url 'discovery:search' %}">Browse projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'discovery:people' %}">Find teammates</a></li>
+        </ul>
+        <form class="d-flex me-3" method="get" action="{% url 'discovery:search' %}">
+          <label class="visually-hidden" for="nav-search">Search projects</label>
+          <input class="form-control form-control-sm me-2" id="nav-search" name="q" placeholder="Search projects">
+          <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
+        </form>
+        {% if user.is_authenticated %}
+          <a class="me-2 small" href="{% url 'teams:request_inbox' %}">Requests{% if pending_requests_count %} <span class="badge text-bg-warning">{{ pending_requests_count }}</span>{% endif %}</a>
+          <span class="me-2 text-muted small">Hi, {{ user.first_name|default:user.username }}</span>
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Log out</button></form>
+        {% else %}
+          <a class="btn btn-sm btn-primary" href="{% url 'accounts:login' %}">Log in</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>

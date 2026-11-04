@@ -1,0 +1,11 @@
+<footer class="mt-5 py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4"><h2 class="h5">ProjectMate</h2><p class="text-muted">Discover projects. Find your team. Build together.</p><p class="mb-0"><span class="fw-semibold">Follow Us</span> <a class="btn btn-sm btn-outline-primary ms-2" href="#" aria-label="GitHub"><i class="bi bi-github"></i></a> <a class="btn btn-sm btn-outline-primary" href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a> <a class="btn btn-sm btn-outline-primary" href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a> <a class="btn btn-sm btn-outline-primary" href="#" aria-label="X"><i class="bi bi-twitter-x"></i></a></p></div>
+      <div class="col-6 col-lg-2"><h2 class="h6">Explore</h2><a class="d-block" href="{% url 'discovery:search' %}">Browse Projects</a><a class="d-block" href="{% url 'discovery:search' %}">Search</a></div>
+      <div class="col-6 col-lg-2"><h2 class="h6">Company</h2><a class="d-block" href="#">About Us</a><a class="d-block" href="#">Team</a><a class="d-block" href="#">Contact Us</a><a class="d-block" href="#">FAQ</a></div>
+      <div class="col-6 col-lg-2"><h2 class="h6">Legal</h2><a class="d-block" href="#">Privacy Policy</a><a class="d-block" href="#">Terms of Service</a><a class="d-block" href="#">Cookie notice</a></div>
+      <div class="col-12 border-top pt-3 mt-2 d-flex justify-content-between"><small class="text-muted">&copy; {{ current_year }} ProjectMate · Group 15 · COMP-8347 · University of Windsor</small><form method="post" action="{% url 'core:set_theme' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-sm btn-link" name="theme" value="{% if pm_theme == 'dark' %}light{% else %}dark{% endif %}" type="submit"><i class="bi bi-circle-half"></i> Theme</button></form></div>
+    </div>
+  </div>
+</footer>
