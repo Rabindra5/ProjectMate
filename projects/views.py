@@ -2,6 +2,10 @@
 
 from django.views.generic import ListView
 from .models import Project
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView
+from .forms import ProjectForm
 
 
 class ProjectListView(ListView):
@@ -18,3 +22,18 @@ class ProjectListView(ListView):
             .select_related("owner", "category")
             .prefetch_related("required_skills")
         )
+
+
+
+class ProjectCreateView(LoginRequiredMixin, CreateView):
+    """Create a project owned by the authenticated member."""
+
+    model = Project
+    form_class = ProjectForm
+    template_name = "projects/form.html"
+
+    def form_valid(self, form):
+        """Set ownership from the session."""
+        form.instance.owner = self.request.user
+        messages.success(self.request, "Project created.")
+        return super().form_valid(form)
