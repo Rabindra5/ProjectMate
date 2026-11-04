@@ -6,7 +6,6 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from discovery.models import Category, Skill
-# from accounts.validators import validate_profile_image
 
 
 def cover_path(instance, filename):
