@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="en-CA" data-bs-theme="{{ pm_theme|default:'light' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Discover projects, find teammates, and build together.">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <title>{% block title %}ProjectMate{% endblock %}</title>
+</head>
+<body class="d-flex flex-column">
+  <a class="skip-link btn btn-primary" href="#main-content">Skip to content</a>
+  {% include "includes/navbar.html" %}
+  <main id="main-content" class="page-shell flex-grow-1">
+    {% include "includes/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  {% include "includes/footer.html" %}
+  {% if not pm_cookie_ok %}<div class="container mb-3"><div class="alert alert-info d-flex justify-content-between align-items-center mb-0"><span>ProjectMate uses functional cookies for sessions, history, and theme preferences.</span><form method="post" action="{% url 'core:set_theme' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-sm btn-outline-primary" name="cookie_ok" value="1" type="submit">Okay</button></form></div></div>{% endif %}
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
