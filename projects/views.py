@@ -1,10 +1,9 @@
 """Project views."""
 
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView, DetailView
 from .models import Project
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import CreateView
 from .forms import ProjectForm
 
 
@@ -37,3 +36,20 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         messages.success(self.request, "Project created.")
         return super().form_valid(form)
+
+
+
+class ProjectDetailView(DetailView):
+    """Show a project and its public collaboration details."""
+
+    model = Project
+    slug_url_kwarg = "slug"
+    template_name = "projects/detail.html"
+
+    def get_queryset(self):
+        """Avoid N+1 queries for project cards."""
+        return Project.objects.select_related(
+            "owner", "category"
+        ).prefetch_related(
+            "required_skills", "updates__author"
+        )
