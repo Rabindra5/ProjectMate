@@ -1,0 +1,240 @@
+[
+{
+  "model": "discovery.category",
+  "pk": 2,
+  "fields": {
+    "name": "Web Development",
+    "slug": "web-development",
+    "description": "Web applications and services.",
+    "icon": "bi-code-slash",
+    "sort_order": 1
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 3,
+  "fields": {
+    "name": "Mobile Apps",
+    "slug": "mobile-apps",
+    "description": "Mobile experiences for campus life.",
+    "icon": "bi-phone",
+    "sort_order": 2
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 4,
+  "fields": {
+    "name": "AI & Data Science",
+    "slug": "ai-data-science",
+    "description": "Data analysis and intelligent systems.",
+    "icon": "bi-graph-up",
+    "sort_order": 3
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 5,
+  "fields": {
+    "name": "Game Development",
+    "slug": "game-development",
+    "description": "Games and interactive media.",
+    "icon": "bi-controller",
+    "sort_order": 4
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 6,
+  "fields": {
+    "name": "IoT & Hardware",
+    "slug": "iot-hardware",
+    "description": "Connected devices and sensors.",
+    "icon": "bi-cpu",
+    "sort_order": 5
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 7,
+  "fields": {
+    "name": "Research",
+    "slug": "research",
+    "description": "Research projects with practical impact.",
+    "icon": "bi-journal-text",
+    "sort_order": 6
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 8,
+  "fields": {
+    "name": "Design & UX",
+    "slug": "design-ux",
+    "description": "Human-centred product design.",
+    "icon": "bi-palette",
+    "sort_order": 7
+  }
+},
+{
+  "model": "discovery.category",
+  "pk": 9,
+  "fields": {
+    "name": "Cybersecurity",
+    "slug": "cybersecurity",
+    "description": "Security education and tooling.",
+    "icon": "bi-shield-check",
+    "sort_order": 8
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 1,
+  "fields": {
+    "name": "Python",
+    "slug": "python",
+    "group": "language"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 2,
+  "fields": {
+    "name": "Django",
+    "slug": "django",
+    "group": "framework"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 3,
+  "fields": {
+    "name": "JavaScript",
+    "slug": "javascript",
+    "group": "language"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 4,
+  "fields": {
+    "name": "React",
+    "slug": "react",
+    "group": "framework"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 5,
+  "fields": {
+    "name": "Data analysis",
+    "slug": "data-analysis",
+    "group": "data"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 6,
+  "fields": {
+    "name": "Figma",
+    "slug": "figma",
+    "group": "design"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 7,
+  "fields": {
+    "name": "Git",
+    "slug": "git",
+    "group": "tools"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 8,
+  "fields": {
+    "name": "Technical writing",
+    "slug": "technical-writing",
+    "group": "soft"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 9,
+  "fields": {
+    "name": "Testing",
+    "slug": "testing",
+    "group": "tools"
+  }
+},
+{
+  "model": "discovery.skill",
+  "pk": 10,
+  "fields": {
+    "name": "SQL",
+    "slug": "sql",
+    "group": "language"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 1,
+  "fields": {
+    "user": 6,
+    "skill": 1,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.460Z"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 2,
+  "fields": {
+    "user": 6,
+    "skill": 2,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.468Z"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 3,
+  "fields": {
+    "user": 6,
+    "skill": 3,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.475Z"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 4,
+  "fields": {
+    "user": 6,
+    "skill": 4,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.483Z"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 5,
+  "fields": {
+    "user": 6,
+    "skill": 5,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.491Z"
+  }
+},
+{
+  "model": "discovery.userskill",
+  "pk": 6,
+  "fields": {
+    "user": 6,
+    "skill": 6,
+    "proficiency": 2,
+    "added_at": "2026-10-24T19:10:56.499Z"
+  }
+}
+]

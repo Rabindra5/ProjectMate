@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Design system | ProjectMate{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading mb-5"><p class="text-uppercase text-primary fw-semibold small mb-1">ProjectMate UI</p><h1>Design system</h1><p class="lead">A consistent, accessible visual language for student collaboration.</p></div>
+  <section class="mb-5"><h2 class="h4">Buttons</h2><button class="btn btn-primary me-2">Primary action</button><button class="btn btn-outline-primary me-2">Secondary action</button><button class="btn btn-outline-danger">Delete</button></section>
+  <section class="mb-5"><h2 class="h4">Cards</h2><div class="row g-4"><div class="col-md-6"><div class="card p-4"><h3 class="h5">Build a study planner</h3><p class="text-muted">A sample project card with readable hierarchy and clear action.</p><span class="badge text-bg-primary">Web Development</span></div></div><div class="col-md-6"><div class="card p-4"><h3 class="h5">Empty state</h3>{% include "includes/empty_state.html" with title="No saved projects" message="Browse projects to get started." %}</div></div></div></section>
+  <section><h2 class="h4">Themes</h2><p>Use the theme button in the footer to switch between light and dark mode.</p></section>
+</div>
+{% endblock %}
