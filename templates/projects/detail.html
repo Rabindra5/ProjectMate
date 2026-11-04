@@ -1,0 +1,50 @@
+
+{% extends "base.html" %}
+{% block title %}{{ object.title }} | ProjectMate{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <p class="text-primary">
+        {{ object.category.name }} · {{ object.get_project_type_display }}
+    </p>
+    <h1>{{ object.title }}</h1>
+    <p class="lead">{{ object.summary }}</p>
+    <p>{{ object.description|linebreaks }}</p>
+
+    <div class="d-flex gap-2">
+        <span class="badge text-bg-secondary">
+            {{ object.get_status_display }}
+        </span>
+        <span class="badge text-bg-light border">
+            Owner: {{ object.owner.username }}
+        </span>
+    </div>
+
+
+
+{% if user == object.owner or user.is_staff %}
+<div class="mt-4">
+    <a class="btn btn-outline-primary"
+       href="{% url 'projects:edit' object.slug %}">
+        Edit project
+    </a>
+
+    <a class="btn btn-outline-danger ms-2"
+       href="{% url 'projects:delete' object.slug %}">
+        Delete
+    </a>
+</div>
+{% endif %}
+
+
+    <h2 class="h4 mt-5">Required skills</h2>
+    <div>
+        {% for skill in object.required_skills.all %}
+            {% include "includes/skill_chip.html" with skill=skill %}
+        {% empty %}
+            <span class="text-muted">
+                No specific skills listed.
+            </span>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
