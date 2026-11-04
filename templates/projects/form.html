@@ -1,20 +1,171 @@
-
 {% extends "base.html" %}
-{% block title %}Project | ProjectMate{% endblock %}
+
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} project | ProjectMate{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <div class="col-lg-8">
-        <h1>Project details</h1>
+    <div class="mx-auto" style="max-width: 48rem;">
+        <h1 class="h2">{% if object %}Edit{% else %}Create{% endif %} project</h1>
+        <p class="text-body-secondary mb-4">
+            Three quick sections. You can edit everything later.
+        </p>
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% include "includes/form_errors.html" with form=form %}
-            {% for field in form %}
-                {% include "includes/form_field.html" %}
-            {% endfor %}
-            <button class="btn btn-primary" type="submit">
-                Save project
-            </button>
+
+            <fieldset class="bg-body border rounded-4 p-4 mb-4">
+                <legend class="float-none w-auto px-2 fs-6 text-uppercase">
+                    1 · Project overview
+                </legend>
+
+                {% include "includes/form_field.html" with field=form.title %}
+                {% include "includes/form_field.html" with field=form.summary %}
+                {% include "includes/form_field.html" with field=form.description %}
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.category %}
+                    </div>
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.project_type %}
+                    </div>
+                </div>
+
+                {% include "includes/form_field.html" with field=form.cover_image %}
+            </fieldset>
+
+            <fieldset class="bg-body border rounded-4 p-4 mb-4">
+                <legend class="float-none w-auto px-2 fs-6 text-uppercase">
+                    2 · Team and skills
+                </legend>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.max_members %}
+                    </div>
+                </div>
+
+                <fieldset{% if form.required_skills.errors %} aria-describedby="project-skill-errors"{% endif %}>
+                    <legend class="fs-6">{{ form.required_skills.label }}</legend>
+
+                    <div class="d-flex flex-wrap gap-2 border rounded-3 p-3">
+                        {% for option in form.required_skills %}
+                            {{ option.tag }}
+                            <label class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                   for="{{ option.id_for_label }}">
+                                {{ option.choice_label }}
+                            </label>
+                        {% empty %}
+                            <span class="text-body-secondary">No skills available yet.</span>
+                        {% endfor %}
+                    </div>
+
+                    <div id="project-skill-errors">{{ form.required_skills.errors }}</div>
+
+                    {{ form.new_skills }}
+                    {{ form.new_skills.errors }}
+                    <div id="pending-skills" class="d-flex flex-wrap gap-2 mt-2"
+                         aria-live="polite"></div>
+
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                        <input id="new-project-skill" class="form-control w-auto"
+                               type="text" maxlength="80" placeholder="e.g. Tailwind"
+                               aria-label="New skill name">
+                        <button id="add-project-skill" class="btn btn-outline-primary" type="button">
+                            + Add skill
+                        </button>
+                    </div>
+                </fieldset>
+            </fieldset>
+
+            <fieldset class="bg-body border rounded-4 p-4 mb-4">
+                <legend class="float-none w-auto px-2 fs-6 text-uppercase">
+                    3 · Logistics
+                </legend>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.deadline %}
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form.is_remote }}
+                    <label class="form-check-label" for="{{ form.is_remote.id_for_label }}">
+                        {{ form.is_remote.label }}
+                    </label>
+                    {{ form.is_remote.errors }}
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.location %}
+                    </div>
+                    <div class="col-sm-6">
+                        {% include "includes/form_field.html" with field=form.repo_url %}
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary"
+                   href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'projects:list' %}{% endif %}">
+                    Cancel
+                </a>
+                <button class="btn btn-primary" type="submit">
+                    {% if object %}Save changes{% else %}Create project{% endif %}
+                </button>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+    const skillInput = document.getElementById("new-project-skill");
+    const addSkillButton = document.getElementById("add-project-skill");
+    const storedSkills = document.getElementById("{{ form.new_skills.auto_id }}");
+    const pendingSkills = document.getElementById("pending-skills");
+    const names = storedSkills.value.split("\n").filter(Boolean);
+
+    function renderPendingSkills() {
+        storedSkills.value = names.join("\n");
+        pendingSkills.replaceChildren();
+
+        names.forEach((name, index) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "btn btn-sm btn-primary rounded-pill";
+            chip.textContent = name + " ×";
+            chip.setAttribute("aria-label", "Remove pending skill " + name);
+
+            chip.addEventListener("click", () => {
+                names.splice(index, 1);
+                renderPendingSkills();
+                skillInput.focus();
+            });
+
+            pendingSkills.append(chip);
+        });
+    }
+
+    addSkillButton.addEventListener("click", () => {
+        const name = skillInput.value.trim();
+        if (name && !names.some(existing => existing.toLowerCase() === name.toLowerCase())) {
+            names.push(name);
+            renderPendingSkills();
+        }
+        skillInput.value = "";
+        skillInput.focus();
+    });
+
+    skillInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addSkillButton.click();
+        }
+    });
+
+    renderPendingSkills();
+</script>
 {% endblock %}
