@@ -20,11 +20,17 @@
     </div>
 
 
+
 {% if user == object.owner or user.is_staff %}
 <div class="mt-4">
     <a class="btn btn-outline-primary"
        href="{% url 'projects:edit' object.slug %}">
         Edit project
+    </a>
+
+    <a class="btn btn-outline-danger ms-2"
+       href="{% url 'projects:delete' object.slug %}">
+        Delete
     </a>
 </div>
 {% endif %}

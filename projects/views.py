@@ -1,6 +1,8 @@
 """Project views."""
 
-from django.views.generic import ListView, CreateView, DetailView, UpdateView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from .models import Project
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -75,3 +77,19 @@ class ProjectUpdateView(LoginRequiredMixin, ProjectOwnerMixin, UpdateView):
         """Save the edit and show feedback."""
         messages.success(self.request, "Project updated.")
         return super().form_valid(form)
+
+
+
+class ProjectDeleteView(LoginRequiredMixin, ProjectOwnerMixin, DeleteView):
+    """Delete an owned project after confirmation."""
+
+    model = Project
+    template_name = "projects/confirm_delete.html"
+    success_url = reverse_lazy("projects:list")
+    slug_url_kwarg = "slug"
+
+    def post(self, request, *args, **kwargs):
+        """Delete the project and notify the owner."""
+        response = super().post(request, *args, **kwargs)
+        messages.success(request, "Project deleted.")
+        return response
