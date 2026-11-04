@@ -4,11 +4,7 @@
 
 {% block content %}
 <div class="container py-4 py-lg-5">
-    <header class="card overflow-hidden mb-4">
-        <div aria-hidden="true"
-             style="height: 150px; background: linear-gradient(120deg, #202b60, #5947bb, #267482);">
-        </div>
-
+    <header class="card mb-4">
         <div class="p-4">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 {% if object.photo %}
@@ -24,7 +20,11 @@
 
                 <div class="flex-grow-1">
                     <p class="small text-body-secondary mb-1">
-                        {% if request.user == object.user %}My profile{% else %}Member profile{% endif %}
+                        {% if request.user == object.user %}
+                            My profile
+                        {% else %}
+                            Member profile
+                        {% endif %}
                     </p>
                     <h1 class="h2 mb-1">{{ object.display_name }}</h1>
                     {% if object.headline %}
@@ -34,8 +34,13 @@
 
                 {% if request.user == object.user %}
                     <div class="d-flex flex-wrap align-items-start gap-2">
-                        <a class="btn btn-outline-primary" href="{% url 'accounts:profile_edit' %}">
-                            {% if object.headline and object.bio %}Edit profile{% else %}Complete profile{% endif %}
+                        <a class="btn btn-outline-primary"
+                           href="{% url 'accounts:profile_edit' %}">
+                            {% if object.headline and object.bio %}
+                                Edit profile
+                            {% else %}
+                                Complete profile
+                            {% endif %}
                         </a>
 
                         <details>
@@ -59,7 +64,8 @@
                                    href="{% url 'accounts:password_change' %}">Change password</a>
                                 <form method="post" action="{% url 'accounts:logout' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="list-group-item list-group-item-action text-danger">
+                                    <button type="submit"
+                                            class="list-group-item list-group-item-action text-danger">
                                         Log out
                                     </button>
                                 </form>
@@ -74,7 +80,8 @@
             <nav class="border-top px-4 py-2" aria-label="Profile navigation">
                 <ul class="nav nav-pills flex-wrap gap-1">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#profile-overview" aria-current="page">Overview</a>
+                        <a class="nav-link active" href="#profile-overview"
+                           aria-current="page">Overview</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'projects:mine' %}">Projects</a>
@@ -128,4 +135,4 @@
         </section>
     </div>
 </div>
-{% endblock %}
+{% endblock %}}
