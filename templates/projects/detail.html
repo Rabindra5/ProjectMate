@@ -19,22 +19,16 @@
         </span>
     </div>
 
-    {% if user == object.owner %}
-    <div class="mt-4">
-        <a class="btn btn-outline-primary"
-           href="{% url 'projects:edit' object.slug %}">
-            Edit project
-        </a>
-        <a class="btn btn-outline-danger ms-2"
-           href="{% url 'projects:delete' object.slug %}">
-            Delete
-        </a>
-    </div>
-    {% elif not user.is_authenticated %}
-    <div class="alert alert-info mt-4">
-        Log in or sign up to request to join.
-    </div>
-    {% endif %}
+
+{% if user == object.owner or user.is_staff %}
+<div class="mt-4">
+    <a class="btn btn-outline-primary"
+       href="{% url 'projects:edit' object.slug %}">
+        Edit project
+    </a>
+</div>
+{% endif %}
+
 
     <h2 class="h4 mt-5">Required skills</h2>
     <div>

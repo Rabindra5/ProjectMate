@@ -1,9 +1,9 @@
 """Project views."""
 
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView
 from .models import Project
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import ProjectForm
 
 
@@ -53,3 +53,25 @@ class ProjectDetailView(DetailView):
         ).prefetch_related(
             "required_skills", "updates__author"
         )
+
+
+class ProjectOwnerMixin(UserPassesTestMixin):
+    """Restrict project mutations to owners and staff."""
+
+    def test_func(self):
+        """Return whether the current user owns the project."""
+        return self.get_object().owner_id == self.request.user.id or self.request.user.is_staff
+
+
+class ProjectUpdateView(LoginRequiredMixin, ProjectOwnerMixin, UpdateView):
+    """Edit an owned project."""
+
+    model = Project
+    form_class = ProjectForm
+    template_name = "projects/form.html"
+    slug_url_kwarg = "slug"
+
+    def form_valid(self, form):
+        """Save the edit and show feedback."""
+        messages.success(self.request, "Project updated.")
+        return super().form_valid(form)
