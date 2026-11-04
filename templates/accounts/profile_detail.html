@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object.display_name }} | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <header class="card overflow-hidden mb-4">
+        <div aria-hidden="true"
+             style="height: 150px; background: linear-gradient(120deg, #202b60, #5947bb, #267482);">
+        </div>
+
+        <div class="p-4">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                {% if object.photo %}
+                    <img src="{{ object.photo.url }}" alt=""
+                         class="rounded-circle object-fit-cover border flex-shrink-0"
+                         width="80" height="80">
+                {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 80px; height: 80px;" aria-hidden="true">
+                        <span class="fs-4 fw-semibold">{{ object.initials }}</span>
+                    </div>
+                {% endif %}
+
+                <div class="flex-grow-1">
+                    <p class="small text-body-secondary mb-1">
+                        {% if request.user == object.user %}My profile{% else %}Member profile{% endif %}
+                    </p>
+                    <h1 class="h2 mb-1">{{ object.display_name }}</h1>
+                    {% if object.headline %}
+                        <p class="text-body-secondary mb-0">{{ object.headline }}</p>
+                    {% endif %}
+                </div>
+
+                {% if request.user == object.user %}
+                    <div class="d-flex flex-wrap align-items-start gap-2">
+                        <a class="btn btn-outline-primary" href="{% url 'accounts:profile_edit' %}">
+                            {% if object.headline and object.bio %}Edit profile{% else %}Complete profile{% endif %}
+                        </a>
+
+                        <details>
+                            <summary class="btn btn-primary">Create</summary>
+                            <div class="list-group mt-2">
+                                <a class="list-group-item list-group-item-action"
+                                   href="{% url 'projects:create' %}">New project</a>
+                                <a class="list-group-item list-group-item-action"
+                                   href="{% url 'projects:mine' %}">Choose a project for a resource upload</a>
+                            </div>
+                        </details>
+
+                        <details>
+                            <summary class="btn btn-outline-secondary">Settings</summary>
+                            <div class="list-group mt-2">
+                                <a class="list-group-item list-group-item-action"
+                                   href="{% url 'accounts:profile_edit' %}">Profile details</a>
+                                <a class="list-group-item list-group-item-action"
+                                   href="{% url 'discovery:skills' %}">Manage skills</a>
+                                <a class="list-group-item list-group-item-action"
+                                   href="{% url 'accounts:password_change' %}">Change password</a>
+                                <form method="post" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="list-group-item list-group-item-action text-danger">
+                                        Log out
+                                    </button>
+                                </form>
+                            </div>
+                        </details>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if request.user == object.user %}
+            <nav class="border-top px-4 py-2" aria-label="Profile navigation">
+                <ul class="nav nav-pills flex-wrap gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#profile-overview" aria-current="page">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'projects:mine' %}">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'activity:history' %}">Activity</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    </header>
+
+    <div class="row g-4" id="profile-overview">
+        <section class="col-lg-8" aria-labelledby="profile-about">
+            <div class="card h-100 p-4">
+                <h2 id="profile-about" class="h5 mb-3">About</h2>
+                {% if object.bio %}
+                    {{ object.bio|linebreaks }}
+                {% elif request.user == object.user %}
+                    <p class="text-body-secondary mb-0">
+                        Tell teammates what you like to build and what kind of project you’d like to join.
+                    </p>
+                {% else %}
+                    <p class="text-body-secondary mb-0">No bio added yet.</p>
+                {% endif %}
+
+                {% if object.program or object.year_of_study %}
+                    <h3 class="h6 mt-3">Education</h3>
+                    <p class="text-body-secondary mb-0">
+                        {% if object.program %}{{ object.program }}{% endif %}
+                        {% if object.program and object.year_of_study %} · {% endif %}
+                        {% if object.year_of_study %}Year {{ object.year_of_study }}{% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="col-lg-4" aria-labelledby="profile-links">
+            <div class="card h-100 p-4">
+                <h2 id="profile-links" class="h5 mb-3">Links</h2>
+                <ul class="list-unstyled mb-0">
+                    {% for link in object.links.all %}
+                        <li class="mb-2">
+                            <a href="{{ link.url }}">{{ link.get_label_display }}</a>
+                        </li>
+                    {% empty %}
+                        <li class="text-body-secondary">No public links yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

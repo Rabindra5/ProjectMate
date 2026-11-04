@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if form.instance.pk %}Edit project{% else %}Create project{% endif %} | ProjectMate
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+      <header class="mb-4">
+        <p class="small fw-semibold text-uppercase text-body-secondary mb-2">
+          Project workspace
+        </p>
+        {% if form.instance.pk %}
+          <h1 class="h2 mb-2">Edit project</h1>
+          <p class="text-body-secondary mb-0">
+            Keep your project details up to date for your teammates.
+          </p>
+        {% else %}
+          <h1 class="h2 mb-2">Create a project</h1>
+          <p class="text-body-secondary mb-0">
+            Share what you’re building and who you’d like to build it with.
+          </p>
+        {% endif %}
+      </header>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "includes/form_errors.html" with form=form %}
+
+        <section class="card p-3 p-md-4 mb-3" aria-labelledby="overview-heading">
+          <h2 id="overview-heading" class="h5 mb-1">1. Project overview</h2>
+          <p class="text-body-secondary mb-3">Describe your idea and what the team will build.</p>
+
+          {% include "includes/form_field.html" with field=form.title %}
+          {% include "includes/form_field.html" with field=form.summary %}
+          {% include "includes/form_field.html" with field=form.description %}
+
+          <div class="row gx-3">
+            <div class="col-md-6">
+              {% include "includes/form_field.html" with field=form.category %}
+            </div>
+            <div class="col-md-6">
+              {% include "includes/form_field.html" with field=form.project_type %}
+            </div>
+          </div>
+
+          {% include "includes/form_field.html" with field=form.cover_image %}
+        </section>
+
+        <section class="card p-3 p-md-4 mb-3" aria-labelledby="team-heading">
+          <h2 id="team-heading" class="h5 mb-1">2. Team and skills</h2>
+          <p class="text-body-secondary mb-3">
+            Set your team size and choose the skills you’re looking for.
+          </p>
+
+          <div class="row gx-3">
+            <div class="col-md-4">
+              {% include "includes/form_field.html" with field=form.max_members %}
+            </div>
+
+            <div class="col-md-8">
+              <fieldset class="mb-3" aria-describedby="skills-help{% if form.required_skills.errors %} skills-errors{% endif %}">
+                <legend class="fs-6 fw-semibold mb-1">
+                  Required skills <span class="fw-normal text-body-secondary">(optional)</span>
+                </legend>
+                <p id="skills-help" class="small text-body-secondary mb-2">
+                  Select the skills you need. Scroll inside the list to see more.
+                </p>
+
+                <div class="d-flex flex-wrap align-content-start gap-2 overflow-auto border rounded-3 p-3"
+                     style="max-height: 12rem;"
+                     tabindex="0" role="group" aria-label="Available skills">
+                  {% for choice in form.required_skills %}
+                    <div>
+                      <input type="checkbox" class="btn-check"
+                             name="{{ choice.data.name }}"
+                             id="{{ choice.id_for_label }}"
+                             value="{{ choice.data.value }}"
+                             {% if choice.data.selected %}checked{% endif %}>
+                      <label class="btn btn-sm btn-outline-primary text-break"
+                             for="{{ choice.id_for_label }}">
+                        {{ choice.choice_label }}
+                      </label>
+                    </div>
+                  {% empty %}
+                    <p class="small text-body-secondary mb-0">No skills are available yet.</p>
+                  {% endfor %}
+                </div>
+
+                {% if form.required_skills.errors %}
+                  <div id="skills-errors" class="small text-danger mt-2">
+                    {% for error in form.required_skills.errors %}
+                      <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </fieldset>
+
+              <div id="custom-skills-fallback">
+                {% include "includes/form_field.html" with field=form.custom_skill %}
+              </div>
+
+              <div id="custom-skills-editor" class="mb-3" hidden>
+                <label for="new-skill-name" class="form-label">Add skill</label>
+                <div class="input-group">
+                  <input id="new-skill-name" type="text" class="form-control"
+                         maxlength="80" placeholder="e.g. Power BI"
+                         aria-describedby="custom-skills-status{% if form.custom_skill.errors %} custom-skills-errors{% endif %}"
+                         {% if form.custom_skill.errors %}aria-invalid="true"{% endif %}>
+                  <button id="add-skill-button" type="button" class="btn btn-outline-primary">
+                    Add skill
+                  </button>
+                </div>
+
+                {% if form.custom_skill.errors %}
+                  <div id="custom-skills-errors" class="small text-danger mt-2">
+                    {% for error in form.custom_skill.errors %}
+                      <p class="mb-1">{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <div id="queued-skills-region" class="mt-2 overflow-auto"
+                     style="max-height: 8rem;"
+                     tabindex="0" role="group" aria-label="Skills to save" hidden>
+                  <ul id="queued-skills" class="list-unstyled d-flex flex-wrap gap-2 p-1 mb-0"></ul>
+                </div>
+                <p id="custom-skills-status" class="small text-body-secondary mb-0"
+                   role="status"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card p-3 p-md-4 mb-4" aria-labelledby="logistics-heading">
+          <h2 id="logistics-heading" class="h5 mb-1">3. Logistics</h2>
+          <p class="text-body-secondary mb-3">
+            Let teammates know when and where you’ll work together.
+          </p>
+
+          <div class="row gx-3">
+            <div class="col-md-6">
+              {% include "includes/form_field.html" with field=form.deadline %}
+            </div>
+            <div class="col-md-6">
+              {% include "includes/form_field.html" with field=form.location %}
+            </div>
+          </div>
+
+          {% include "includes/form_field.html" with field=form.is_remote %}
+          {% include "includes/form_field.html" with field=form.repo_url %}
+        </section>
+
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+          {% if form.instance.pk %}
+            <a class="btn btn-outline-secondary" href="{{ form.instance.get_absolute_url }}">
+              Cancel
+            </a>
+            <button class="btn btn-primary" type="submit">Save changes</button>
+          {% else %}
+            <a class="btn btn-outline-secondary" href="{% url 'projects:mine' %}">
+              Cancel
+            </a>
+            <button class="btn btn-primary" type="submit">Create project</button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const fallback = document.getElementById("custom-skills-fallback");
+    const field = fallback.querySelector("textarea");
+    if (!field || !field.form) {
+      return;
+    }
+
+    const editor = document.getElementById("custom-skills-editor");
+    const input = document.getElementById("new-skill-name");
+    const button = document.getElementById("add-skill-button");
+    const region = document.getElementById("queued-skills-region");
+    const list = document.getElementById("queued-skills");
+    const status = document.getElementById("custom-skills-status");
+
+    const skills = field.value
+      .split(/\r?\n/)
+      .map(name => name.trim())
+      .filter(Boolean);
+
+    function renderSkills() {
+      field.value = skills.join("\n");
+      region.hidden = skills.length === 0;
+      list.replaceChildren();
+
+      skills.forEach((name, index) => {
+        const item = document.createElement("li");
+        item.className = "mw-100";
+
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "btn btn-sm btn-primary text-break";
+        chip.textContent = `${name} ×`;
+        chip.setAttribute("aria-label", `Remove ${name}`);
+
+        chip.addEventListener("click", () => {
+          skills.splice(index, 1);
+          renderSkills();
+          status.textContent = `${name} removed.`;
+          input.focus();
+        });
+
+        item.append(chip);
+        list.append(item);
+      });
+    }
+
+    function addSkill() {
+      const name = input.value.trim().replace(/\s+/g, " ");
+
+      if (!name) {
+        status.textContent = "Enter a skill name.";
+        input.focus();
+        return false;
+      }
+
+      if (name.length > 80) {
+        status.textContent = "Use 80 characters or fewer.";
+        input.focus();
+        return false;
+      }
+
+      if (skills.some(skill => skill.toLowerCase() === name.toLowerCase())) {
+        input.value = "";
+        status.textContent = `${name} is already in your list.`;
+        input.focus();
+        return true;
+      }
+
+      skills.push(name);
+      renderSkills();
+      region.scrollTop = region.scrollHeight;
+      input.value = "";
+      status.textContent = `${name} added.`;
+      input.focus();
+      return true;
+    }
+
+    button.addEventListener("click", addSkill);
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault();
+        addSkill();
+      }
+    });
+
+    field.form.addEventListener("submit", event => {
+      if (input.value.trim() && !addSkill()) {
+        event.preventDefault();
+      }
+    });
+
+    renderSkills();
+    fallback.hidden = true;
+    editor.hidden = false;
+  })();
+</script>
+{% endblock %}

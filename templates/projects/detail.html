@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object.title }} | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <header class="card p-4 mb-4">
+                <p class="text-body-secondary mb-2">
+                    {{ object.category.name }} · {{ object.get_project_type_display }}
+                </p>
+                <h1 class="mb-2">{{ object.title }}</h1>
+                <p class="lead mb-3">{{ object.summary }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge text-bg-secondary">{{ object.get_status_display }}</span>
+                    <span class="badge text-bg-secondary">Owner: {{ object.owner.username }}</span>
+                </div>
+            </header>
+
+            <section class="card p-4 mb-4" aria-labelledby="project-about">
+                <h2 id="project-about" class="h4">About this project</h2>
+                {{ object.description|linebreaks }}
+            </section>
+
+            <section class="card p-4" aria-labelledby="project-skills">
+                <h2 id="project-skills" class="h4">Skills needed</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in object.required_skills.all %}
+                        {% include "includes/skill_chip.html" with skill=skill %}
+                    {% empty %}
+                        <span class="text-body-secondary">No specific skills listed.</span>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <aside class="col-lg-4" aria-labelledby="project-actions">
+            <div class="card p-4">
+                {% if user == object.owner %}
+                    <h2 id="project-actions" class="h5">Manage this project</h2>
+                    <div class="d-grid gap-2 mt-2">
+                        <a class="btn btn-primary" href="{% url 'teams:request_inbox' %}">
+                            Review join requests
+                        </a>
+                        <a class="btn btn-outline-primary" href="{% url 'projects:edit' object.slug %}">
+                            Edit project
+                        </a>
+                        <a class="btn btn-outline-danger" href="{% url 'projects:delete' object.slug %}">
+                            Delete project
+                        </a>
+                    </div>
+                {% else %}
+                    <h2 id="project-actions" class="h5">Join the team</h2>
+                    {% if not object.is_open %}
+                        <p class="text-body-secondary mb-0">
+                            This project is currently closed to join requests.
+                        </p>
+                    {% elif user.is_authenticated %}
+                        <p class="text-body-secondary">
+                            Tell the project owner what skills you bring and how you’d like to help.
+                        </p>
+                        <a class="btn btn-primary w-100" href="{% url 'teams:apply' object.slug %}">
+                            Request to join
+                        </a>
+                        <a class="mt-3" href="{% url 'teams:my_requests' %}">View my sent requests</a>
+                    {% else %}
+                        <p class="text-body-secondary">
+                            Sign in to introduce yourself and request a spot on this team.
+                        </p>
+                        {% url 'projects:detail' object.slug as project_url %}
+                        <a class="btn btn-primary w-100"
+                           href="{% url 'accounts:login' %}?next={{ project_url|urlencode }}">
+                            Log in to request to join
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

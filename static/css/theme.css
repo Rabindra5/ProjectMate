@@ -1,0 +1,26 @@
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--pm-bg);
+  color: var(--pm-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+a { color: var(--pm-primary-600); }
+a:hover { color: var(--pm-primary-700); }
+.navbar, .card, .modal-content, .dropdown-menu { background-color: var(--pm-surface); }
+.card { border-color: var(--pm-border); border-radius: var(--pm-radius); box-shadow: var(--pm-shadow-sm); }
+.btn-primary { --bs-btn-bg: var(--pm-primary); --bs-btn-border-color: var(--pm-primary); --bs-btn-hover-bg: var(--pm-primary-600); --bs-btn-hover-border-color: var(--pm-primary-600); }
+.btn-outline-primary { --bs-btn-color: var(--pm-primary-600); --bs-btn-border-color: var(--pm-primary-600); }
+.form-control, .form-select { border-color: var(--pm-border); }
+.form-control:focus, .form-select:focus { border-color: var(--pm-primary); box-shadow: 0 0 0 .25rem rgb(79 70 229 / .2); }
+.text-muted { color: var(--pm-muted) !important; }
+.bg-surface { background-color: var(--pm-surface); }
+.skip-link { position: absolute; left: -10000px; top: auto; }
+.skip-link:focus { left: 1rem; top: 1rem; z-index: 2000; }
+.page-shell { min-height: 100vh; }
+.section-heading { max-width: 70ch; }
+footer { border-top: 1px solid var(--pm-border); }
