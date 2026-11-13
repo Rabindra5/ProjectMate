@@ -21,6 +21,8 @@ class JoinRequestCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         """Reject applications that violate basic project rules."""
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
         self.project = get_object_or_404(Project, slug=kwargs["slug"])
         if self.project.owner_id == request.user.id or Membership.objects.filter(project=self.project, user=request.user).exists():
             messages.info(request, "You are already connected to this project.")
