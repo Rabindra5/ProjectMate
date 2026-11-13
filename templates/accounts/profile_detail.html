@@ -1,1 +1,161 @@
-{% extends "base.html" %}{% block title %}{{ object.display_name }} | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><div class="card p-4"><div class="d-flex align-items-center gap-3"><div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:72px;height:72px">{{ object.initials }}</div><div><h1 class="h2 mb-1">{{ object.display_name }}</h1><p class="text-muted mb-0">{{ object.headline }}</p></div></div><hr><p>{{ object.bio|linebreaks }}</p><p class="text-muted">{{ object.program }}{% if object.year_of_study %} · Year {{ object.year_of_study }}{% endif %}</p><h2 class="h5 mt-4">Links</h2><ul>{% for link in object.links.all %}<li><a href="{{ link.url }}">{{ link.get_label_display }}</a></li>{% empty %}<li class="text-muted">No public links yet.</li>{% endfor %}</ul></div></div>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}{{ object.display_name }} | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container-xxl py-5">
+  <header class="card rounded-4 p-4 p-lg-5 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-4">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-primary-subtle text-primary-emphasis
+                    d-flex align-items-center justify-content-center
+                    flex-shrink-0 fw-bold fs-3"
+             style="width: 80px; height: 80px;" aria-hidden="true">
+          {{ object.initials }}
+        </div>
+
+        <div>
+          <h1 class="h2 fw-bold mb-1">{{ object.display_name }}</h1>
+          {% if object.headline %}
+            <p class="text-body-secondary mb-1">{{ object.headline }}</p>
+          {% endif %}
+          {% if object.program or object.year_of_study %}
+            <p class="text-body-secondary mb-0">
+              {{ object.program }}
+              {% if object.year_of_study %}
+                {% if object.program %} · {% endif %}
+                {{ object.get_year_of_study_display }}
+              {% endif %}
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if is_own_profile %}
+        <a class="btn btn-primary rounded-3 px-4 py-2"
+           href="{% url 'projects:create' %}">
+          <span aria-hidden="true">+</span> Create project
+        </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="card rounded-4 p-4 mb-4" aria-labelledby="about-title">
+        <h2 id="about-title" class="small fw-semibold text-uppercase text-body-secondary">
+          About
+        </h2>
+        {% if object.bio %}
+          <p class="mb-0">{{ object.bio|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-body-secondary mb-0">No bio added yet.</p>
+        {% endif %}
+      </section>
+
+      <section class="card rounded-4 p-4 mb-4" aria-labelledby="skills-title">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+          <h2 id="skills-title"
+              class="small fw-semibold text-uppercase text-body-secondary mb-0">
+            Skills
+          </h2>
+          {% if is_own_profile %}
+            <a class="text-decoration-none fw-semibold"
+               href="{% url 'discovery:skills' %}"
+               aria-label="Manage my skills">Manage</a>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          {% for assignment in profile_skills %}
+            <span class="rounded-pill bg-body-tertiary px-3 py-1 small">
+              {{ assignment.skill.name }}
+            </span>
+          {% empty %}
+            <p class="text-body-secondary mb-0">No skills added yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section aria-labelledby="projects-title">
+        <h2 id="projects-title"
+            class="small fw-semibold text-uppercase text-body-secondary mb-3">
+          Projects
+        </h2>
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+          {% for project in object.user.owned_projects.all %}
+            <div class="col">
+              <article class="card rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                  <span class="small fw-semibold text-uppercase text-body-secondary">
+                    {{ project.category.name }}
+                  </span>
+                  <span class="badge rounded-pill {% if project.status == 'recruiting' %}bg-success-subtle text-success-emphasis{% else %}bg-body-tertiary text-body-secondary{% endif %}">
+                    {{ project.get_status_display }}
+                  </span>
+                </div>
+                <h3 class="h5 fw-bold">
+                  <a class="link-body-emphasis text-decoration-none"
+                     href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+                </h3>
+                <p class="text-body-secondary">{{ project.summary }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                  {% for skill in project.required_skills.all %}
+                    <span class="rounded-pill bg-body-tertiary px-3 py-1 small">
+                      {{ skill.name }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </article>
+            </div>
+          {% empty %}
+            <p class="text-body-secondary mb-0">No projects yet.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <aside class="col-lg-4">
+      {% if is_own_profile %}
+        <section class="card rounded-4 p-4 mb-4" aria-labelledby="recently-viewed-title">
+          <h2 id="recently-viewed-title"
+              class="small fw-semibold text-uppercase text-body-secondary">
+            Recently viewed
+          </h2>
+          {% if recently_viewed %}
+            <ul class="list-unstyled mb-3">
+              {% for visit in recently_viewed %}
+                <li class="mb-2">
+                  <a href="{{ visit.project.get_absolute_url }}">
+                    {{ visit.project.title }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-body-secondary">
+              Projects you open will appear here, newest first.
+            </p>
+          {% endif %}
+          <a class="fw-semibold text-decoration-none"
+             href="{% url 'activity:history' %}">View all activity</a>
+        </section>
+      {% endif %}
+
+      <section class="card rounded-4 p-4" aria-labelledby="profile-links-title">
+        <h2 id="profile-links-title"
+            class="small fw-semibold text-uppercase text-body-secondary">
+          Links
+        </h2>
+        <ul class="list-unstyled mb-0">
+          {% for link in object.links.all %}
+            <li><a href="{{ link.url }}">{{ link.get_label_display }}</a></li>
+          {% empty %}
+            <li class="text-body-secondary">No public links yet.</li>
+          {% endfor %}
+        </ul>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

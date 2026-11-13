@@ -1,12 +1,19 @@
 """Project views."""
 
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
-from django.urls import reverse_lazy
-from django.shortcuts import redirect
-from .models import Project
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import DatabaseError
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+from activity.services import record_project_view
+
 from .forms import ProjectForm
+from .models import Project
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectListView(ListView):
@@ -19,11 +26,9 @@ class ProjectListView(ListView):
 
     def get_queryset(self):
         return (
-            Project.objects
-            .select_related("owner", "category")
+            Project.objects.select_related("owner", "category")
             .prefetch_related("required_skills")
         )
-
 
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
@@ -34,35 +39,52 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
     template_name = "projects/form.html"
 
     def form_valid(self, form):
-        """Set ownership from the session."""
         form.instance.owner = self.request.user
         messages.success(self.request, "Project created.")
         return super().form_valid(form)
 
 
-
 class ProjectDetailView(DetailView):
-    """Show a project and its public collaboration details."""
+    """Show project details and record successful page visits."""
 
     model = Project
     slug_url_kwarg = "slug"
     template_name = "projects/detail.html"
 
     def get_queryset(self):
-        """Avoid N+1 queries for project cards."""
-        return Project.objects.select_related(
-            "owner", "category"
-        ).prefetch_related(
-            "required_skills", "updates__author"
+        return (
+            Project.objects.select_related("owner", "category")
+            .prefetch_related("required_skills", "updates__author")
         )
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+
+        if request.method == "GET":
+            response.add_post_render_callback(self.record_view)
+
+        return response
+
+    def record_view(self, response):
+        """Keep the detail page available if saving history fails."""
+        if response.status_code != 200:
+            return
+
+        try:
+            record_project_view(self.request, self.object)
+        except DatabaseError:
+            logger.exception(
+                "Could not record project view for project %s",
+                self.object.pk,
+            )
 
 
 class ProjectOwnerMixin(UserPassesTestMixin):
-    """Restrict project mutations to owners and staff."""
+    """Restrict project changes to owners and staff."""
 
     def test_func(self):
-        """Return whether the current user owns the project."""
-        return self.get_object().owner_id == self.request.user.id or self.request.user.is_staff
+        user = self.request.user
+        return self.get_object().owner_id == user.id or user.is_staff
 
 
 class ProjectUpdateView(LoginRequiredMixin, ProjectOwnerMixin, UpdateView):
@@ -74,10 +96,8 @@ class ProjectUpdateView(LoginRequiredMixin, ProjectOwnerMixin, UpdateView):
     slug_url_kwarg = "slug"
 
     def form_valid(self, form):
-        """Save the edit and show feedback."""
         messages.success(self.request, "Project updated.")
         return super().form_valid(form)
-
 
 
 class ProjectDeleteView(LoginRequiredMixin, ProjectOwnerMixin, DeleteView):
@@ -89,7 +109,6 @@ class ProjectDeleteView(LoginRequiredMixin, ProjectOwnerMixin, DeleteView):
     slug_url_kwarg = "slug"
 
     def post(self, request, *args, **kwargs):
-        """Delete the project and notify the owner."""
         response = super().post(request, *args, **kwargs)
         messages.success(request, "Project deleted.")
         return response
