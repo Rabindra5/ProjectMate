@@ -93,3 +93,20 @@ class ProjectDeleteView(LoginRequiredMixin, ProjectOwnerMixin, DeleteView):
         response = super().post(request, *args, **kwargs)
         messages.success(request, "Project deleted.")
         return response
+
+
+class MyProjectsView(LoginRequiredMixin, ListView):
+    """Show projects owned by the authenticated member."""
+
+    model = Project
+    template_name = "projects/my_projects.html"
+    context_object_name = "projects"
+    paginate_by = 9
+
+    def get_queryset(self):
+        """Return projects owned by the current user."""
+        return (
+            Project.objects.filter(owner=self.request.user)
+            .select_related("owner", "category")
+            .prefetch_related("required_skills")
+        )

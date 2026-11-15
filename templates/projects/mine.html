@@ -1,0 +1,55 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Projects</h1>
+        <a href="{% url 'projects:create' %}"
+           class="btn btn-primary">
+            Create Project
+        </a>
+    </div>
+
+    {% if projects %}
+        <div class="row g-3">
+            {% for project in projects %}
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{ project.title }}
+                            </h5>
+
+                            <p class="card-text">
+                                {{ project.summary }}
+                            </p>
+
+                            <p>
+                                <strong>Status:</strong>
+                                {{ project.get_status_display }}
+                            </p>
+
+                            <a href="{{ project.get_absolute_url }}"
+                               class="btn btn-outline-primary">
+                                View Details
+                            </a>
+
+                            <a href="{% url 'projects:edit' project.slug %}"
+                               class="btn btn-outline-secondary">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You haven't created any projects yet.</p>
+        <a href="{% url 'projects:create' %}"
+           class="btn btn-primary">
+            Create Your First Project
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
