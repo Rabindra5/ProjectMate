@@ -5,8 +5,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import FormView, TemplateView
 
 from .forms import BootstrapFormMixin
@@ -20,6 +21,7 @@ class SafePaginationMixin:
     def paginate_queryset(self, queryset, page_size):
         """Delegate pagination while gracefully handling invalid page values."""
         from django.core.paginator import Paginator
+
         paginator = Paginator(queryset, page_size)
         try:
             page_number = self.request.GET.get("page", 1)
@@ -32,24 +34,14 @@ class SafePaginationMixin:
 
 
 class IndexView(TemplateView):
-    """Render the public landing page."""
+    """Show the landing page or open the signed-in user's profile."""
 
     template_name = "core/home.html"
 
-    def get_context_data(self, **kwargs):
-        """Build a small personalized dashboard for authenticated members."""
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            from activity.models import ViewedProject
-            from discovery.services import annotate_match
-            from projects.models import Project
-            context["my_projects_count"] = Project.objects.filter(owner=self.request.user).count()
-            context["recommended_projects"] = annotate_match(
-                Project.objects.filter(status="recruiting").exclude(owner=self.request.user),
-                self.request.user,
-            ).order_by("-match_pct", "-created_at")[:3]
-            context["recent_projects"] = ViewedProject.objects.filter(user=self.request.user).select_related("project")[:5]
-        return context
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("accounts:profile", username=request.user.get_username())
+        return super().get(request, *args, **kwargs)
 
 
 class AboutView(TemplateView):
@@ -102,13 +94,20 @@ class ContactView(FormView):
         if self.request.session.get("contact_sent_at"):
             messages.info(self.request, "Please wait before sending another message.")
             return HttpResponseRedirect(reverse("core:contact"))
+
         message = ContactMessage.objects.create(
-            name=form.cleaned_data["name"], email=form.cleaned_data["email"],
-            subject=form.cleaned_data["subject"], message=form.cleaned_data["message"],
+            name=form.cleaned_data["name"],
+            email=form.cleaned_data["email"],
+            subject=form.cleaned_data["subject"],
+            message=form.cleaned_data["message"],
             user=self.request.user if self.request.user.is_authenticated else None,
         )
         self.request.session["contact_sent_at"] = True
-        mail_admins(f"ProjectMate contact: {message.subject}", message.message, fail_silently=True)
+        mail_admins(
+            f"ProjectMate contact: {message.subject}",
+            message.message,
+            fail_silently=True,
+        )
         messages.success(self.request, "Thanks. Your message has been sent.")
         return super().form_valid(form)
 
@@ -121,30 +120,44 @@ class PrivacyView(TemplateView):
     """Show the privacy notice."""
 
     template_name = "core/legal.html"
-    extra_context = {"heading": "Privacy policy", "body": "ProjectMate stores account, project, and functional activity data needed to operate the service. We do not sell student data."}
+    extra_context = {
+        "heading": "Privacy policy",
+        "body": (
+            "ProjectMate stores account, project, and functional activity data "
+            "needed to operate the service. We do not sell student data."
+        ),
+    }
 
 
 class TermsView(TemplateView):
     """Show the terms notice."""
 
     template_name = "core/legal.html"
-    extra_context = {"heading": "Terms of service", "body": "Use ProjectMate respectfully for genuine academic collaboration. Keep credentials private and upload only material you have permission to share."}
+    extra_context = {
+        "heading": "Terms of service",
+        "body": (
+            "Use ProjectMate respectfully for genuine academic collaboration. "
+            "Keep credentials private and upload only material you have permission to share."
+        ),
+    }
 
 
 class FaqView(TemplateView):
     """Answer common ProjectMate questions."""
 
     template_name = "core/faq.html"
-    extra_context = {"faqs": [
-        ("What is ProjectMate?", "A student-focused place to discover projects and teammates."),
-        ("Who can join?", "University of Windsor students and collaborators invited by project owners."),
-        ("Can guests browse?", "Yes. Guests can browse public projects, while requests require an account."),
-        ("How do requests work?", "Send a short application; the owner accepts or rejects it from their inbox."),
-        ("Can I create a project?", "Authenticated members can create and manage their own projects."),
-        ("What happens when a team is full?", "The project automatically stops accepting new requests."),
-        ("Are resources private?", "Owners can mark resources public or team-only."),
-        ("How is history stored?", "Functional sessions and signed cookies help provide recent activity and history."),
-    ]}
+    extra_context = {
+        "faqs": [
+            ("What is ProjectMate?", "A student-focused place to discover projects and teammates."),
+            ("Who can join?", "University of Windsor students and collaborators invited by project owners."),
+            ("Can guests browse?", "Yes. Guests can browse public projects, while requests require an account."),
+            ("How do requests work?", "Send a short application; the owner accepts or rejects it from their inbox."),
+            ("Can I create a project?", "Authenticated members can create and manage their own projects."),
+            ("What happens when a team is full?", "The project automatically stops accepting new requests."),
+            ("Are resources private?", "Owners can mark resources public or team-only."),
+            ("How is history stored?", "Functional sessions and signed cookies help provide recent activity and history."),
+        ],
+    }
 
 
 class StyleguideView(TemplateView):
@@ -163,12 +176,21 @@ def set_theme(request):
     """Store a validated theme preference in a cookie."""
     if request.method != "POST":
         return HttpResponse("Method not allowed", status=405)
+
     theme = request.POST.get("theme", "light")
     next_url = request.POST.get("next", "/")
-    if not url_has_allowed_host_and_scheme(next_url, {request.get_host()}, require_https=request.is_secure()):
+    if not url_has_allowed_host_and_scheme(
+        next_url, {request.get_host()}, require_https=request.is_secure()
+    ):
         next_url = "/"
+
     response = HttpResponseRedirect(next_url)
-    response.set_cookie("pm_theme", theme if theme in {"light", "dark"} else "light", max_age=31536000, samesite="Lax")
+    response.set_cookie(
+        "pm_theme",
+        theme if theme in {"light", "dark"} else "light",
+        max_age=31536000,
+        samesite="Lax",
+    )
     if request.POST.get("cookie_ok") == "1":
         response.set_cookie("pm_cookie_ok", "1", max_age=31536000, samesite="Lax")
     return response

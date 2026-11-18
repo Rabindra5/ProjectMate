@@ -1,1 +1,108 @@
-{% extends "base.html" %}{% block title %}Find teammates | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><h1>Find teammates</h1><form method="get" class="card p-4 my-4"><div class="row g-3">{% for field in form %}<div class="col-md-6">{% include "includes/form_field.html" %}</div>{% endfor %}</div><button class="btn btn-primary" type="submit">Find people</button></form><div class="row row-cols-1 row-cols-md-3 g-4">{% for person in people %}<div class="col"><div class="card p-4 h-100"><h2 class="h5"><a href="{% url 'accounts:profile' person.user.username %}">{{ person.display_name }}</a></h2><p class="text-muted">{{ person.headline }}</p><p>{{ person.program }}</p></div></div>{% empty %}{% include "includes/empty_state.html" with title="No teammates found" message="Try a broader search." %}{% endfor %}</div></div>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Find teammates | ProjectMate{% endblock %}
+
+{% block content %}
+<style>
+    .teammate-skill select {
+        min-height: calc(1.5em + 1rem + 2px);
+        font-size: 1.25rem;
+        border-radius: var(--bs-border-radius-lg);
+    }
+</style>
+
+<div class="container py-5">
+    <header class="mb-4">
+        <h1 class="fw-bold mb-2">Find teammates</h1>
+        <p class="text-body-secondary mb-0">
+            {% if not people %}
+                No matching teammates
+            {% elif form.cleaned_data.q or form.cleaned_data.skill %}
+                {{ people|length }} matched teammate{{ people|length|pluralize }}
+            {% else %}
+                Showing all teammates
+            {% endif %}
+        </p>
+    </header>
+
+    <form method="get" class="bg-body border rounded-4 p-4 mb-4" aria-label="Find teammates">
+        <div class="row g-2">
+            <div class="col-md">
+                <label class="visually-hidden" for="{{ form.q.id_for_label }}">
+                    Search teammates
+                </label>
+                <input type="search"
+                       class="form-control form-control-lg rounded-3"
+                       id="{{ form.q.id_for_label }}"
+                       name="{{ form.q.html_name }}"
+                       value="{{ form.q.value|default_if_none:'' }}"
+                       maxlength="100"
+                       placeholder="Search name, headline, or program"
+                       {% if form.q.errors %}aria-invalid="true" aria-describedby="teammate-search-errors"{% endif %}>
+                <div id="teammate-search-errors">{{ form.q.errors }}</div>
+            </div>
+
+            <div class="col-md-4 teammate-skill">
+                <label class="visually-hidden" for="{{ form.skill.id_for_label }}">
+                    Skill
+                </label>
+                {{ form.skill }}
+                {{ form.skill.errors }}
+            </div>
+
+            <div class="col-md-auto d-grid">
+                <button class="btn btn-primary btn-lg rounded-3 px-4 align-self-start" type="submit">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        {% if form.q.value or form.skill.value %}
+            <a class="d-inline-block mt-3" href="{% url 'discovery:people' %}">
+                Clear filters
+            </a>
+        {% endif %}
+    </form>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for person in people %}
+            <div class="col">
+                <article class="bg-body border rounded-4 p-4 h-100 d-flex align-items-start gap-3">
+                    <span class="rounded-circle bg-primary-subtle text-primary-emphasis fw-bold fs-5 flex-shrink-0 d-inline-flex align-items-center justify-content-center"
+                          style="width: 3.5rem; height: 3.5rem;"
+                          aria-hidden="true">
+                        {{ person.initials }}
+                    </span>
+
+                    <div class="flex-grow-1 text-break">
+                        <h2 class="h5 mb-1">
+                            <a class="link-body-emphasis text-decoration-none"
+                               href="{% url 'accounts:profile' person.user.username %}">
+                                {{ person.display_name }}
+                            </a>
+                        </h2>
+
+                        {% if person.headline or person.program %}
+                            <p class="text-body-secondary mb-2">
+                                {{ person.headline|default:person.program }}
+                            </p>
+                        {% endif %}
+
+                        <ul class="list-unstyled d-flex flex-wrap gap-1 mb-0">
+                            {% for user_skill in person.user.user_skills.all %}
+                                <li class="rounded-pill px-2 py-1 small {% if user_skill.skill == form.cleaned_data.skill %}bg-primary-subtle text-primary-emphasis{% else %}bg-body-tertiary{% endif %}">
+                                    {{ user_skill.skill.name }}
+                                </li>
+                            {% empty %}
+                                <li class="text-body-secondary small">No skills listed</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            {% include "includes/empty_state.html" with title="No teammates found" message="Try a broader search." %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
