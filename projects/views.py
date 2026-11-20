@@ -118,7 +118,7 @@ class MyProjectsView(LoginRequiredMixin, ListView):
     """Show projects owned by the authenticated member."""
 
     model = Project
-    template_name = "projects/my_projects.html"
+    template_name = "projects/mine.html"
     context_object_name = "projects"
     paginate_by = 9
 
