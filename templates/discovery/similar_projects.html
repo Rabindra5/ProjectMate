@@ -1,0 +1,48 @@
+{% if similar_projects %}
+<section class="project-detail-card mt-4">
+
+    <h2 class="project-card-heading mb-2">
+        Similar projects
+    </h2>
+
+    <p class="text-muted small mb-4">
+        Explore projects with related skills and interests.
+    </p>
+
+    {% for project in similar_projects %}
+        <article class="{% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+
+            <span class="text-muted small text-uppercase">
+                {{ project.category.name }}
+            </span>
+
+            <h3 class="h6 fw-bold mt-2">
+                <a href="{{ project.get_absolute_url }}"
+                   class="text-decoration-none">
+                    {{ project.title }}
+                </a>
+            </h3>
+
+            <p class="text-muted small">
+                {{ project.summary|truncatechars:100 }}
+            </p>
+
+            <div class="d-flex flex-wrap gap-1 mb-3">
+                {% for skill in project.required_skills.all %}
+                    <span class="project-skill-tag">
+                        {{ skill.name }}
+                    </span>
+                {% endfor %}
+            </div>
+
+            <div class="small text-muted">
+                <i class="bi bi-people me-1" aria-hidden="true"></i>
+                {{ project.available_slots }}
+                open spot{{ project.available_slots|pluralize }}
+            </div>
+
+        </article>
+    {% endfor %}
+
+</section>
+{% endif %}

@@ -62,3 +62,32 @@ class UserSkillForm(BootstrapFormMixin, forms.ModelForm):
         if self.user and self.user.user_skills.count() >= 25:
             raise forms.ValidationError("You can add up to 25 skills.")
         return cleaned
+
+
+class ManageSkillsForm(forms.Form):
+    """Validate the member's selected skills."""
+
+    skills = forms.ModelMultipleChoiceField(
+        queryset=Skill.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    new_skill = forms.CharField(
+        required=False,
+        max_length=80,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Add a skill",
+        }),
+    )
+
+    def clean_skills(self):
+        skills = self.cleaned_data["skills"]
+
+        if skills.count() > 25:
+            raise forms.ValidationError(
+                "You can select up to 25 skills."
+            )
+
+        return skills

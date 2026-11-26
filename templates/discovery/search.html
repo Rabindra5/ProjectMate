@@ -5,7 +5,7 @@
 {% block content %}
 <style>
   .project-browse .browse-panel {
-    background: var(--bs-body-bg);
+    background: #ffffff;
     border: 1px solid var(--bs-border-color);
     border-radius: 1.15rem;
   }
@@ -31,7 +31,8 @@
 
   .project-browse .browse-title:hover,
   .project-browse .browse-title:focus-visible {
-    text-decoration: underline;
+    color: var(--bs-primary);
+    text-decoration: none;
   }
 
   .project-browse .browse-chip {
@@ -58,6 +59,20 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .project-browse article.browse-panel {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .project-browse article.browse-panel:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .project-browse article.browse-panel:hover .browse-title {
+    color: var(--bs-primary);
+  }
+
 </style>
 
 <section class="project-browse py-5">
@@ -127,7 +142,9 @@
       {% endif %}
     </form>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-lg-4">
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-lg-4">
       {% for project in projects %}
         <div class="col">
           <article class="browse-panel p-4 h-100 d-flex flex-column">
@@ -196,6 +213,10 @@
         {% endif %}
       </nav>
     {% endif %}
+      </div>
+
+      
+    </div>
   </div>
 </section>
 {% endblock %}

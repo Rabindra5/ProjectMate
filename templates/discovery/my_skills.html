@@ -1,1 +1,168 @@
-{% extends "base.html" %}{% block title %}My skills | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><div class="d-flex justify-content-between align-items-center"><div><h1>My skills</h1><p class="text-muted">Help projects understand what you bring to a team.</p></div><a class="btn btn-primary" href="{% url 'discovery:skill_add' %}">Add skill</a></div><div class="row g-3 mt-3">{% for assignment in skills %}<div class="col-md-4"><div class="card p-3 d-flex flex-row justify-content-between"><span>{{ assignment.skill.name }} <small class="text-muted">({{ assignment.get_proficiency_display }})</small></span><form method="post" action="{% url 'discovery:skill_delete' assignment.pk %}" data-confirm="Remove this skill?">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Remove {{ assignment.skill.name }}"><i class="bi bi-x"></i></button></form></div></div>{% empty %}{% include "includes/empty_state.html" with title="No skills yet" message="Add your first skill to improve project matches." cta_url="/skills/add/" cta_label="Add skill" %}{% endfor %}</div></div>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Manage skills | ProjectMate{% endblock %}
+
+{% block content %}
+<style>
+  .manage-skills {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .skills-panel {
+    background: #ffffff;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1.2rem;
+    padding: 2rem;
+  }
+
+  .skills-list {
+    background: #f9f7f2;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+  }
+
+  .skill-option {
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .skill-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: #f1eee6;
+    color: #18243d;
+    padding: .4rem .85rem;
+    border-radius: 999px;
+    transition: background .2s ease;
+  }
+
+  .skill-option input:checked + .skill-chip {
+    background: #e5eaff;
+    color: #3446c5;
+  }
+
+  .skill-option input:focus-visible + .skill-chip {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 3px;
+  }
+
+  .skill-remove {
+    display: none;
+  }
+
+  .skill-option input:checked + .skill-chip .skill-remove {
+    display: inline;
+  }
+
+  @media (max-width: 576px) {
+    .skills-panel {
+      padding: 1rem;
+    }
+  }
+</style>
+
+<section class="container py-5">
+  <div class="manage-skills">
+
+    <header class="mb-4">
+      <h1 class="fw-bold">Manage skills</h1>
+      <p class="text-body-secondary">
+        Keep your skills updated and help project owners
+        understand what you bring to a team.
+      </p>
+    </header>
+
+    <form method="post" class="skills-panel">
+      {% csrf_token %}
+
+      {{ form.non_field_errors }}
+      {{ form.skills.errors }}
+
+      <div class="skills-list">
+        {% for checkbox in form.skills %}
+          <label class="skill-option">
+            <input
+              type="checkbox"
+              name="{{ form.skills.html_name }}"
+              value="{{ checkbox.data.value }}"
+              class="visually-hidden"
+              {% if checkbox.data.selected %}checked{% endif %}
+            >
+
+            <span class="skill-chip">
+              {{ checkbox.choice_label }}
+              <span class="skill-remove" aria-hidden="true">
+                &times;
+              </span>
+            </span>
+          </label>
+        {% empty %}
+          <p class="text-muted mb-0">
+            No skills are available yet.
+          </p>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap mt-4">
+        <div class="flex-grow-1">
+          <label class="visually-hidden"
+                 for="{{ form.new_skill.id_for_label }}">
+            Add a skill
+          </label>
+          {{ form.new_skill }}
+          {{ form.new_skill.errors }}
+        </div>
+
+        <button class="btn btn-outline-secondary px-4"
+                type="submit" name="action" value="add">
+          <i class="bi bi-plus-lg me-1"></i>
+          Add skill
+        </button>
+      </div>
+
+      <div class="d-flex justify-content-between
+                  align-items-center flex-wrap gap-3 mt-4">
+
+        <small class="text-body-secondary" id="skill-count">
+          0 of 25 skills selected
+        </small>
+
+        <button class="btn btn-primary px-4" type="submit">
+          Save skills
+        </button>
+
+      </div>
+    </form>
+
+  </div>
+</section>
+
+<script>
+  const skillInputs = document.querySelectorAll(
+    '.skill-option input'
+  );
+  const skillCount = document.getElementById('skill-count');
+
+  function updateSkillCount() {
+    const count = [...skillInputs].filter(
+      input => input.checked
+    ).length;
+
+    skillCount.textContent =
+      `${count} of 25 skills selected`;
+  }
+
+  skillInputs.forEach(input => {
+    input.addEventListener('change', updateSkillCount);
+  });
+
+  updateSkillCount();
+</script>
+
+{% endblock %}

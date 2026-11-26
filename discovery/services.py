@@ -32,3 +32,40 @@ def annotate_match(queryset, user):
         required=Count("required_skills", distinct=True),
     )
     return queryset.annotate(match_pct=Case(When(required=0, then=Value(None)), default=ExpressionWrapper(F("matched") * 100 / F("required"), output_field=IntegerField())))
+
+
+def get_similar_projects(project, limit=4):
+    """Recommend available projects with similar categories and skills."""
+    from django.db.models.functions import Greatest
+
+    skill_ids = list(
+        project.required_skills.values_list("pk", flat=True)
+    )
+
+    return (
+        Project.objects.filter(status="recruiting")
+        .exclude(pk=project.pk)
+        .annotate(
+            shared_skills=Count(
+                "required_skills",
+                filter=Q(required_skills__in=skill_ids),
+                distinct=True,
+            ),
+            category_match=Case(
+                When(category_id=project.category_id, then=Value(3)),
+                default=Value(0),
+                output_field=IntegerField(),
+            ),
+            available_slots=Greatest(
+                F("max_members") - Count("memberships", distinct=True),
+                Value(0),
+            ),
+        )
+        .annotate(
+            similarity_score=F("shared_skills") * 2 + F("category_match")
+        )
+        .filter(similarity_score__gt=0, available_slots__gt=0)
+        .select_related("category", "owner")
+        .prefetch_related("required_skills")
+        .order_by("-similarity_score", "-created_at", "-pk")[:limit]
+    )
