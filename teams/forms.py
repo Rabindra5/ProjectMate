@@ -2,7 +2,7 @@
 
 from django import forms
 from core.forms import BootstrapFormMixin
-from .models import JoinRequest
+from .models import JoinRequest, MemberRemoval
 
 
 class JoinRequestForm(BootstrapFormMixin, forms.ModelForm):
@@ -29,6 +29,18 @@ class DecisionForm(BootstrapFormMixin, forms.Form):
 
 
 class RemoveMemberForm(BootstrapFormMixin, forms.Form):
-    """Confirm removal of a project member."""
+    """Require a valid, explained reason before removing a member."""
 
-    confirm = forms.BooleanField(required=True)
+    reason = forms.ChoiceField(choices=[("", "Choose a reason")] + MemberRemoval.REASONS)
+    details = forms.CharField(
+        max_length=300,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Shared with the member so they understand the decision.",
+    )
+
+    def clean_details(self):
+        """Require a meaningful explanation rather than whitespace."""
+        value = self.cleaned_data["details"].strip()
+        if len(value) < 15:
+            raise forms.ValidationError("Explain the reason in at least 15 characters.")
+        return value

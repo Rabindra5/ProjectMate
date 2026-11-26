@@ -1,7 +1,7 @@
 """Admin configuration for teams."""
 
 from django.contrib import admin
-from .models import JoinRequest, Membership
+from .models import JoinRequest, MemberRemoval, Membership
 
 
 @admin.register(Membership)
@@ -24,3 +24,14 @@ class JoinRequestAdmin(admin.ModelAdmin):
     search_fields = ("project__title", "applicant__username", "message")
     raw_id_fields = ("project", "applicant", "decided_by")
     readonly_fields = ("created_at",)
+
+
+@admin.register(MemberRemoval)
+class MemberRemovalAdmin(admin.ModelAdmin):
+    """Configure member removal audit records."""
+
+    list_display = ("project", "user", "reason", "removed_by", "removed_at")
+    list_filter = ("reason", "removed_at")
+    search_fields = ("project__title", "user__username", "details")
+    raw_id_fields = ("project", "user", "removed_by")
+    readonly_fields = ("removed_at",)

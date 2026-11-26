@@ -4,105 +4,245 @@
 
 {% block content %}
 <style>
-    .teammate-skill select {
-        min-height: calc(1.5em + 1rem + 2px);
-        font-size: 1.25rem;
-        border-radius: var(--bs-border-radius-lg);
+  .people-browse .browse-panel {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1.15rem;
+  }
+
+  .people-browse .browse-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+    gap: .75rem;
+    align-items: start;
+  }
+
+  .people-browse .browse-filters input,
+  .people-browse .browse-filters select,
+  .people-browse .browse-filters button {
+    min-height: 2.9rem;
+    border-radius: .75rem;
+  }
+
+  .people-browse .browse-title {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .people-browse .browse-title:hover,
+  .people-browse .browse-title:focus-visible {
+    text-decoration: underline;
+  }
+
+  .people-browse .browse-chip {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+  }
+
+  .people-browse .browse-recruiting {
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+  }
+
+  .people-browse .browse-match {
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+  }
+
+  .people-browse .person-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    object-fit: cover;
+  }
+
+  .people-browse .person-headline {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* One-line skill row keeps every card the same height. */
+  .people-browse .skill-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .5rem;
+    min-height: 1.75rem;
+    overflow: hidden;
+  }
+
+  .people-browse .skill-row .browse-chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .people-browse .skill-row .skill-extra {
+    display: none;
+  }
+
+  .people-browse .skill-row.is-expanded {
+    flex-wrap: wrap;
+  }
+
+  .people-browse .skill-row.is-expanded .skill-extra {
+    display: inline-block;
+  }
+
+  .people-browse .skill-more {
+    border: 1px dashed var(--bs-border-color);
+    background: transparent;
+    color: var(--pm-primary);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .people-browse .skill-more:hover,
+  .people-browse .skill-more:focus-visible {
+    background: var(--bs-primary-bg-subtle);
+  }
+
+  @media (max-width: 767.98px) {
+    .people-browse .browse-filters {
+      grid-template-columns: 1fr;
     }
+  }
 </style>
 
-<div class="container py-5">
+<section class="people-browse py-5">
+  <div class="container-xxl px-3 px-lg-4">
     <header class="mb-4">
-        <h1 class="fw-bold mb-2">Find teammates</h1>
-        <p class="text-body-secondary mb-0">
-            {% if not people %}
-                No matching teammates
-            {% elif form.cleaned_data.q or form.cleaned_data.skill %}
-                {{ people|length }} matched teammate{{ people|length|pluralize }}
-            {% else %}
-                Showing all teammates
-            {% endif %}
-        </p>
+      <h1 class="fw-bold mb-2">Find teammates</h1>
+      <p class="text-body-secondary mb-0">
+        {% if form.q.value or form.skill.value %}
+          {% if people %}
+            {{ people|length }} matched teammate{{ people|length|pluralize }}
+          {% else %}
+            No matching teammates
+          {% endif %}
+        {% elif people %}
+          Showing all teammates
+        {% else %}
+          No teammates available
+        {% endif %}
+      </p>
     </header>
 
-    <form method="get" class="bg-body border rounded-4 p-4 mb-4" aria-label="Find teammates">
-        <div class="row g-2">
-            <div class="col-md">
-                <label class="visually-hidden" for="{{ form.q.id_for_label }}">
-                    Search teammates
-                </label>
-                <input type="search"
-                       class="form-control form-control-lg rounded-3"
-                       id="{{ form.q.id_for_label }}"
-                       name="{{ form.q.html_name }}"
-                       value="{{ form.q.value|default_if_none:'' }}"
-                       maxlength="100"
-                       placeholder="Search name, headline, or program"
-                       {% if form.q.errors %}aria-invalid="true" aria-describedby="teammate-search-errors"{% endif %}>
-                <div id="teammate-search-errors">{{ form.q.errors }}</div>
-            </div>
+    <form method="get" class="browse-panel p-3 p-lg-4 mb-4"
+          role="search" aria-label="Find teammates">
+      {{ form.non_field_errors }}
 
-            <div class="col-md-4 teammate-skill">
-                <label class="visually-hidden" for="{{ form.skill.id_for_label }}">
-                    Skill
-                </label>
-                {{ form.skill }}
-                {{ form.skill.errors }}
-            </div>
-
-            <div class="col-md-auto d-grid">
-                <button class="btn btn-primary btn-lg rounded-3 px-4 align-self-start" type="submit">
-                    Search
-                </button>
-            </div>
+      <div class="browse-filters">
+        <div>
+          <label for="{{ form.q.id_for_label }}" class="visually-hidden">Search teammates</label>
+          <input type="search" name="{{ form.q.html_name }}" id="{{ form.q.id_for_label }}"
+                 class="form-control" maxlength="100"
+                 placeholder="Search name, headline or program"
+                 value="{{ form.q.value|default_if_none:'' }}">
+          {{ form.q.errors }}
         </div>
 
-        {% if form.q.value or form.skill.value %}
-            <a class="d-inline-block mt-3" href="{% url 'discovery:people' %}">
-                Clear filters
-            </a>
-        {% endif %}
+        <div>
+          <label for="{{ form.skill.id_for_label }}" class="visually-hidden">Skill</label>
+          {{ form.skill }}
+          {{ form.skill.errors }}
+        </div>
+
+        <button class="btn btn-primary px-4" type="submit">Search</button>
+      </div>
+
+      {% if request.GET %}
+        <a class="d-inline-block mt-3" href="{% url 'discovery:people' %}">Clear filters</a>
+      {% endif %}
     </form>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-        {% for person in people %}
-            <div class="col">
-                <article class="bg-body border rounded-4 p-4 h-100 d-flex align-items-start gap-3">
-                    <span class="rounded-circle bg-primary-subtle text-primary-emphasis fw-bold fs-5 flex-shrink-0 d-inline-flex align-items-center justify-content-center"
-                          style="width: 3.5rem; height: 3.5rem;"
-                          aria-hidden="true">
-                        {{ person.initials }}
-                    </span>
-
-                    <div class="flex-grow-1 text-break">
-                        <h2 class="h5 mb-1">
-                            <a class="link-body-emphasis text-decoration-none"
-                               href="{% url 'accounts:profile' person.user.username %}">
-                                {{ person.display_name }}
-                            </a>
-                        </h2>
-
-                        {% if person.headline or person.program %}
-                            <p class="text-body-secondary mb-2">
-                                {{ person.headline|default:person.program }}
-                            </p>
-                        {% endif %}
-
-                        <ul class="list-unstyled d-flex flex-wrap gap-1 mb-0">
-                            {% for user_skill in person.user.user_skills.all %}
-                                <li class="rounded-pill px-2 py-1 small {% if user_skill.skill == form.cleaned_data.skill %}bg-primary-subtle text-primary-emphasis{% else %}bg-body-tertiary{% endif %}">
-                                    {{ user_skill.skill.name }}
-                                </li>
-                            {% empty %}
-                                <li class="text-body-secondary small">No skills listed</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </article>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-lg-4">
+      {% for person in people %}
+        <div class="col">
+          <article class="browse-panel p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+              <small class="text-body-secondary text-uppercase fw-semibold text-truncate">
+                {{ person.program|default:"Student" }}
+              </small>
+              <span class="browse-chip browse-recruiting small fw-semibold flex-shrink-0">
+                Open to teams
+              </span>
             </div>
-        {% empty %}
-            {% include "includes/empty_state.html" with title="No teammates found" message="Try a broader search." %}
-        {% endfor %}
+
+            <div class="d-flex align-items-center gap-3 mb-2">
+              {% if person.photo %}
+                <img src="{{ person.photo.url }}" alt="" class="person-avatar rounded-circle flex-shrink-0">
+              {% else %}
+                <span class="person-avatar rounded-circle bg-primary-subtle text-primary-emphasis fw-bold flex-shrink-0 d-inline-flex align-items-center justify-content-center"
+                      aria-hidden="true">
+                  {{ person.initials }}
+                </span>
+              {% endif %}
+              <h2 class="h5 fw-bold mb-0 text-break">
+                <a class="browse-title" href="{% url 'accounts:profile' person.user.username %}">
+                  {{ person.display_name }}
+                </a>
+              </h2>
+            </div>
+
+            <p class="text-body-secondary person-headline" title="{{ person.headline }}">
+              {{ person.headline|default:"No headline yet." }}
+            </p>
+
+            {% with skills=person.user.user_skills.all %}
+              <div class="skill-row mb-3" id="skills-{{ person.pk }}">
+                {% for user_skill in skills %}
+                  <span class="browse-chip small{% if forloop.counter > 3 %} skill-extra{% endif %}{% if user_skill.skill == form.cleaned_data.skill %} browse-match{% endif %}">
+                    {{ user_skill.skill.name }}
+                  </span>
+                {% empty %}
+                  <span class="text-body-secondary small align-self-center">No skills listed</span>
+                {% endfor %}
+                {% if skills|length > 3 %}
+                  <button type="button" class="browse-chip small skill-more"
+                          aria-expanded="false" aria-controls="skills-{{ person.pk }}"
+                          data-more-label="+{{ skills|length|add:'-3' }}"
+                          aria-label="Show all {{ skills|length }} skills">
+                    +{{ skills|length|add:"-3" }}
+                  </button>
+                {% endif %}
+              </div>
+            {% endwith %}
+
+            <div class="text-body-secondary small d-flex flex-wrap gap-3 mt-auto">
+              {% if person.year_of_study %}
+                <span>
+                  <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                  {{ person.get_year_of_study_display }}
+                </span>
+              {% endif %}
+              <span>
+                <i class="bi bi-clock" aria-hidden="true"></i>
+                {{ person.availability_hours }} hr{{ person.availability_hours|pluralize }}/week
+              </span>
+            </div>
+          </article>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="browse-panel p-4">
+            <p class="text-body-secondary mb-0">Try a different name or skill, or clear your filters.</p>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-</div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll(".people-browse .skill-more").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var row = button.closest(".skill-row");
+      var expanded = row.classList.toggle("is-expanded");
+      button.setAttribute("aria-expanded", expanded);
+      button.textContent = expanded ? "Show less" : button.dataset.moreLabel;
+    });
+  });
+</script>
 {% endblock %}
