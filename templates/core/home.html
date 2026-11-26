@@ -7,119 +7,7 @@ Discover projects and teammates | ProjectMate
 
 {% block content %}
 
-{% if user.is_authenticated %}
-
-    <!-- Logged-in User Welcome Section -->
-    <section class="container py-5">
-
-        <p class="text-primary fw-semibold">
-            Welcome back{% if user.first_name %}, {{ user.first_name }}{% endif %}.
-        </p>
-
-        <h1 class="display-5 fw-bold">
-            Your next team is closer.
-        </h1>
-
-        <p class="lead text-muted">
-            Keep exploring ideas that match your skills.
-        </p>
-
-        <div class="d-flex gap-2 flex-wrap">
-
-            <a class="btn btn-primary"
-               href="{% url 'projects:create' %}">
-                New project
-            </a>
-
-            <a class="btn btn-outline-primary"
-               href="{% url 'discovery:people' %}">
-                Find teammates
-            </a>
-
-            <a class="btn btn-outline-primary"
-               href="{% url 'discovery:skills' %}">
-                Update skills
-            </a>
-
-        </div>
-
-    </section>
-
-
-    <!-- Dashboard Section -->
-    <section class="container pb-5">
-
-        <div class="row g-4">
-
-            <!-- Owned Projects Card -->
-            <div class="col-md-4">
-
-                <a href="{% url 'projects:mine' %}"
-                   class="text-decoration-none text-reset d-block h-100"
-                   aria-label="View my projects">
-
-                    <div class="card p-4 h-100">
-
-                        <span class="text-muted">
-                            Owned projects
-                        </span>
-
-                        <strong class="display-6">
-                            {{ my_projects_count|default:"0" }}
-                        </strong>
-
-                        <span class="text-primary small mt-2">
-                            View my projects &rarr;
-                        </span>
-
-                    </div>
-
-                </a>
-
-            </div>
-
-
-            <!-- Recommended Projects Card -->
-            <div class="col-md-8">
-
-                <div class="card p-4">
-
-                    <h2 class="h5">
-                        Recommended for you
-                    </h2>
-
-                    {% for project in recommended_projects %}
-
-                        <a class="d-block"
-                           href="{{ project.get_absolute_url }}">
-
-                            {{ project.title }}
-
-                            <span class="text-success">
-                                {{ project.match_pct|default:"0" }}% match
-                            </span>
-
-                        </a>
-
-                    {% empty %}
-
-                        <span class="text-muted">
-                            Add skills to improve recommendations.
-                        </span>
-
-                    {% endfor %}
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-{% else %}
-
-    <!-- Guest Homepage Hero Section -->
+<!-- Guest Homepage Hero Section -->
     <section class="container py-5">
 
         <div class="row align-items-center g-5">
@@ -144,10 +32,17 @@ Discover projects and teammates | ProjectMate
                     Browse projects
                 </a>
 
-                <a class="btn btn-outline-primary"
-                   href="{% url 'accounts:login' %}">
-                    Join ProjectMate
-                </a>
+                {% if user.is_authenticated %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'projects:create' %}">
+                        New project
+                    </a>
+                {% else %}
+                    <a class="btn btn-outline-primary"
+                       href="{% url 'accounts:login' %}">
+                        Join ProjectMate
+                    </a>
+                {% endif %}
 
             </div>
 
@@ -202,7 +97,5 @@ Discover projects and teammates | ProjectMate
         </div>
 
     </section>
-
-{% endif %}
 
 {% endblock %}

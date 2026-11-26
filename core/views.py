@@ -117,7 +117,7 @@ class ContactView(FormView):
 class PrivacyView(TemplateView):
     """Show the privacy notice."""
 
-    template_name = "core/legal.html"
+    template_name = "core/privacy.html"
     extra_context = {
         "heading": "Privacy policy",
         "body": (
