@@ -28,7 +28,7 @@ class Membership(models.Model):
 class JoinRequest(models.Model):
     """Track a student's request to join a project."""
 
-    STATUSES = [("pending", "Pending"), ("accepted", "Accepted"), ("rejected", "Rejected"), ("withdrawn", "Withdrawn"), ("cancelled", "Cancelled")]
+    STATUSES = [("pending", "Pending"), ("accepted", "Accepted"), ("rejected", "Rejected"), ("withdrawn", "Withdrawn"), ("cancelled", "Cancelled"), ("removed", "Removed")]
     project = models.ForeignKey(Project, related_name="join_requests", on_delete=models.CASCADE)
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="join_requests", on_delete=models.CASCADE)
     message = models.TextField(max_length=500)
@@ -49,3 +49,29 @@ class JoinRequest(models.Model):
     def get_absolute_url(self):
         """Return the request inbox URL."""
         return reverse("teams:request_inbox")
+
+
+class MemberRemoval(models.Model):
+    """Keep an audit record when an owner removes an accepted member."""
+
+    REASONS = [
+        ("inactive", "Inactive or not contributing"),
+        ("missed_deadlines", "Repeatedly missed deadlines"),
+        ("conduct", "Conduct or collaboration issues"),
+        ("scope_change", "Project scope or team needs changed"),
+        ("member_request", "Member asked to be removed"),
+        ("other", "Other"),
+    ]
+    project = models.ForeignKey(Project, related_name="member_removals", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="project_removals", on_delete=models.CASCADE)
+    removed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="performed_removals", on_delete=models.SET_NULL)
+    reason = models.CharField(max_length=30, choices=REASONS)
+    details = models.CharField(max_length=300)
+    removed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-removed_at"]
+
+    def __str__(self):
+        """Return a readable removal label."""
+        return f"{self.user} removed from {self.project}"

@@ -1,23 +1,163 @@
 {% extends "base.html" %}
+
 {% block title %}Request inbox | ProjectMate{% endblock %}
+
 {% block content %}
+<style>
+    .decision-panel {
+        display: none;
+    }
+
+    .decision-form.is-deciding .decision-actions {
+        display: none !important;
+    }
+
+    .decision-form.is-deciding .decision-panel {
+        display: block;
+    }
+</style>
+
 <div class="container py-5">
-  <h1>Request inbox</h1>
-  {% for request in requests %}
-  <div class="card p-4 mb-3">
-    <h2 class="h5">{{ request.project.title }} · {{ request.applicant.username }}</h2>
-    <p>{{ request.message }}</p>
-    <form method="post" action="{% url 'teams:decide' request.pk %}">
-      {% csrf_token %}
-      <input type="text" name="decision_note" maxlength="300" class="form-control mb-2" placeholder="Optional note to applicant">
-      <div class="d-flex gap-2">
-        <button class="btn btn-primary" name="action" value="accept" type="submit">Accept</button>
-        <button class="btn btn-outline-danger" name="action" value="reject" type="submit">Reject</button>
-      </div>
-    </form>
-  </div>
-  {% empty %}
-  {% include "includes/empty_state.html" with title="Inbox is clear" message="Pending requests for your projects appear here." %}
-  {% endfor %}
+    <header class="mb-4">
+        <h1 class="fw-bold mb-2">Join requests</h1>
+        <p class="text-body-secondary mb-0">
+            {% if requests %}
+                {{ requests|length }} pending request{{ requests|length|pluralize }} for your projects
+            {% else %}
+                No pending requests
+            {% endif %}
+        </p>
+    </header>
+
+    {% include "teams/tabs.html" %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            {% for request in requests %}
+                <article class="card rounded-4 p-4 mb-3">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <span class="rounded-circle bg-primary-subtle text-primary-emphasis fw-bold flex-shrink-0 d-inline-flex align-items-center justify-content-center"
+                              style="width: 3rem; height: 3rem;" aria-hidden="true">
+                            {{ request.applicant.profile.initials|default:request.applicant.username|slice:":2"|upper }}
+                        </span>
+                        <div class="flex-grow-1 text-break">
+                            <h2 class="h5 mb-1">
+                                <a class="link-body-emphasis text-decoration-none"
+                                   href="{% url 'accounts:profile' request.applicant.username %}">
+                                    {{ request.applicant.get_full_name|default:request.applicant.username }}
+                                </a>
+                            </h2>
+                            <p class="small text-body-secondary mb-0">
+                                wants to join
+                                <a class="text-decoration-none" href="{{ request.project.get_absolute_url }}">{{ request.project.title }}</a>
+                                · {{ request.created_at|timesince }} ago
+                            </p>
+                        </div>
+                        <span class="badge rounded-pill bg-body-tertiary text-body-secondary flex-shrink-0">
+                            {{ request.project.open_slots }} spot{{ request.project.open_slots|pluralize }} left
+                        </span>
+                    </div>
+
+                    <div class="bg-body-tertiary rounded-3 p-3 mb-3">
+                        <p class="mb-0">{{ request.message|linebreaksbr }}</p>
+                    </div>
+
+                    <form method="post" action="{% url 'teams:decide' request.pk %}" class="decision-form">
+                        {% csrf_token %}
+
+                        <!-- Step 1: choose -->
+                        <div class="decision-actions d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary rounded-3 px-4" type="button"
+                                    data-decision="accept"
+                                    {% if not request.project.is_open %}disabled title="This project has no open spot"{% endif %}>
+                                <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Accept
+                            </button>
+                            <button class="btn btn-outline-danger rounded-3 px-4" type="button"
+                                    data-decision="reject">
+                                Decline
+                            </button>
+                        </div>
+                        {% if not request.project.is_open %}
+                            <p class="small text-body-secondary mt-2 mb-0">
+                                Team is full. Remove a member or raise the team size to accept.
+                            </p>
+                        {% endif %}
+
+                        <!-- Step 2: optional note, then confirm -->
+                        <div class="decision-panel border rounded-3 p-3">
+                            <label class="form-label fw-semibold" for="note-{{ request.pk }}">
+                                <span data-panel-title>Add a note</span>
+                                <span class="text-body-secondary fw-normal">(optional)</span>
+                            </label>
+                            <textarea id="note-{{ request.pk }}" name="decision_note" maxlength="300" rows="2"
+                                      class="form-control rounded-3 mb-3"
+                                      placeholder="Message to {{ request.applicant.get_full_name|default:request.applicant.username }}"></textarea>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn rounded-3 px-4" type="submit" name="action" value="" data-confirm>
+                                    Confirm
+                                </button>
+                                <button class="btn btn-outline-secondary rounded-3" type="button" data-cancel>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </article>
+            {% empty %}
+                <div class="card rounded-4">
+                    {% include "includes/empty_state.html" with title="Inbox is clear" message="Pending requests for your projects appear here." %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <aside class="col-lg-4">
+            <section class="card rounded-4 p-4" aria-labelledby="my-teams-title">
+                <h2 id="my-teams-title" class="small fw-semibold text-uppercase text-body-secondary mb-3">
+                    Your teams
+                </h2>
+                {% for project in owned_projects %}
+                    <a class="d-flex justify-content-between align-items-center gap-2 py-2 text-decoration-none {% if not forloop.last %}border-bottom{% endif %}"
+                       href="{% url 'teams:team' project.slug %}">
+                        <span class="text-truncate">
+                            <span class="link-body-emphasis d-block text-truncate">{{ project.title }}</span>
+                            <span class="small text-body-secondary">
+                                {{ project.get_status_display }} · created {{ project.created_at|date:"M j" }}
+                            </span>
+                        </span>
+                        <span class="small text-body-secondary flex-shrink-0">{{ project.member_count }}/{{ project.max_members }}</span>
+                    </a>
+                {% empty %}
+                    <p class="small text-body-secondary mb-2">You don't own any projects yet.</p>
+                    <a class="btn btn-sm btn-primary rounded-3" href="{% url 'projects:create' %}">Create project</a>
+                {% endfor %}
+            </section>
+        </aside>
+    </div>
 </div>
+
+<script>
+    document.querySelectorAll(".decision-form").forEach(function (form) {
+        var confirm = form.querySelector("[data-confirm]");
+        var title = form.querySelector("[data-panel-title]");
+        var note = form.querySelector("textarea");
+
+        form.querySelectorAll("[data-decision]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                var accepting = button.dataset.decision === "accept";
+                confirm.value = button.dataset.decision;
+                confirm.textContent = accepting ? "Confirm accept" : "Confirm decline";
+                confirm.classList.toggle("btn-primary", accepting);
+                confirm.classList.toggle("btn-danger", !accepting);
+                title.textContent = accepting ? "Welcome note" : "Reason for declining";
+                form.classList.add("is-deciding");
+                note.focus();
+            });
+        });
+
+        form.querySelector("[data-cancel]").addEventListener("click", function () {
+            note.value = "";
+            form.classList.remove("is-deciding");
+        });
+    });
+</script>
 {% endblock %}

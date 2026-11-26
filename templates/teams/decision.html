@@ -1,1 +1,23 @@
-{% extends "base.html" %}{% block title %}Request decision | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><h1>Request decision</h1><form method="post">{% csrf_token %}{% for field in form %}{% include "includes/form_field.html" %}{% endfor %}<button class="btn btn-primary" type="submit">Save decision</button></form></div>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Request decision | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="col-lg-7">
+        <header class="mb-4">
+            <h1 class="fw-bold mb-2">Request decision</h1>
+            <p class="text-body-secondary mb-0">Accept or decline this request and optionally leave a note.</p>
+        </header>
+        <form method="post" class="card rounded-4 p-4">
+            {% csrf_token %}
+            {% for field in form %}
+                {% include "includes/form_field.html" %}
+            {% endfor %}
+            <div>
+                <button class="btn btn-primary rounded-3 px-4" type="submit">Save decision</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,1 +1,194 @@
-{% extends "base.html" %}{% block title %}{{ project.title }} team | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><h1>{{ project.title }} team</h1><div class="row g-3">{% for membership in members %}<div class="col-md-4"><div class="card p-3"><a href="{% url 'accounts:profile' membership.user.username %}">{{ membership.user.get_full_name|default:membership.user.username }}</a><span class="text-muted">{{ membership.get_role_display }}</span></div></div>{% endfor %}</div></div>{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} team | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <nav class="mb-4" aria-label="Breadcrumb">
+        <div class="project-breadcrumb">
+            <a href="{% url 'discovery:search' %}">Browse projects</a>
+            <span>/</span>
+            <a href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+            <span>/</span>
+            <span>Team</span>
+        </div>
+    </nav>
+
+    <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">{{ project.title }} team</h1>
+            <p class="text-body-secondary mb-0">
+                {{ project.member_count }}/{{ project.max_members }} member{{ project.max_members|pluralize }}
+                {% if project.is_open %}
+                    · {{ project.open_slots }} open spot{{ project.open_slots|pluralize }}
+                {% endif %}
+            </p>
+        </div>
+        <span class="badge rounded-pill fs-6 px-3 py-2
+            {% if project.status == 'recruiting' %}bg-success-subtle text-success-emphasis
+            {% elif project.status == 'full' %}bg-warning-subtle text-warning-emphasis
+            {% else %}bg-body-tertiary text-body-secondary{% endif %}">
+            {{ project.get_status_display }}
+        </span>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section class="card rounded-4 p-4" aria-labelledby="members-title">
+                <h2 id="members-title" class="small fw-semibold text-uppercase text-body-secondary mb-3">
+                    Members
+                </h2>
+
+                <ul class="list-unstyled mb-0">
+                    {% for membership in members %}
+                        <li class="d-flex flex-wrap align-items-center gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <span class="rounded-circle bg-primary-subtle text-primary-emphasis fw-bold flex-shrink-0 d-inline-flex align-items-center justify-content-center"
+                                  style="width: 3rem; height: 3rem;" aria-hidden="true">
+                                {{ membership.user.profile.initials|default:membership.user.username|slice:":2"|upper }}
+                            </span>
+
+                            <div class="flex-grow-1 text-break">
+                                <a class="link-body-emphasis text-decoration-none fw-semibold"
+                                   href="{% url 'accounts:profile' membership.user.username %}">
+                                    {{ membership.user.get_full_name|default:membership.user.username }}
+                                </a>
+                                <div class="small text-body-secondary">
+                                    Joined {{ membership.joined_at|date:"M j, Y" }}
+                                </div>
+                            </div>
+
+                            <span class="badge rounded-pill {% if membership.role == 'owner' %}bg-primary-subtle text-primary-emphasis{% else %}bg-body-tertiary text-body-secondary{% endif %}">
+                                {{ membership.get_role_display }}
+                            </span>
+
+                            {% if is_owner and membership.role == "member" %}
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-3"
+                                        data-bs-toggle="modal" data-bs-target="#remove-member-{{ membership.user_id }}">
+                                    <i class="bi bi-person-dash me-1" aria-hidden="true"></i>Remove
+                                </button>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+
+                    {% if project.is_open %}
+                        {% for slot in ""|center:project.open_slots %}
+                            <li class="d-flex align-items-center gap-3 py-3 border-top">
+                                <span class="rounded-circle border border-2 text-body-secondary flex-shrink-0 d-inline-flex align-items-center justify-content-center"
+                                      style="width: 3rem; height: 3rem; border-style: dashed !important;" aria-hidden="true">
+                                    <i class="bi bi-plus-lg"></i>
+                                </span>
+                                <span class="text-body-secondary">Open spot</span>
+                            </li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+            </section>
+
+            {% if is_owner and removals %}
+                <section class="card rounded-4 p-4 mt-4" aria-labelledby="removals-title">
+                    <h2 id="removals-title" class="small fw-semibold text-uppercase text-body-secondary mb-1">
+                        Removal history
+                    </h2>
+                    <p class="small text-body-secondary mb-3">Only you can see this record.</p>
+                    <ul class="list-unstyled mb-0">
+                        {% for removal in removals %}
+                            <li class="py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                                <div class="d-flex flex-wrap justify-content-between gap-2">
+                                    <strong>{{ removal.user.get_full_name|default:removal.user.username }}</strong>
+                                    <span class="small text-body-secondary">{{ removal.removed_at|date:"M j, Y" }}</span>
+                                </div>
+                                <span class="rounded-pill bg-body-tertiary px-2 py-1 small d-inline-block mt-1">{{ removal.get_reason_display }}</span>
+                                <p class="small text-body-secondary mb-0 mt-1">{{ removal.details }}</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        </div>
+
+        <aside class="col-lg-4">
+            <div class="card rounded-4 p-4">
+                <h2 class="h5 fw-bold mb-3">{% if is_owner %}Manage team{% else %}About this team{% endif %}</h2>
+
+                {% if is_owner %}
+                    <a class="btn btn-primary w-100 rounded-3 mb-2" href="{% url 'teams:request_inbox' %}">
+                        <i class="bi bi-inbox me-2" aria-hidden="true"></i>Review requests
+                        {% if pending_count %}<span class="badge text-bg-warning ms-1">{{ pending_count }}</span>{% endif %}
+                    </a>
+                    <a class="btn btn-outline-secondary w-100 rounded-3" href="{% url 'projects:edit' project.slug %}">
+                        Change team size
+                    </a>
+                    <p class="small text-body-secondary mt-3 mb-0">
+                        Removing a member requires a reason, notifies them, and reopens their spot for new applicants.
+                    </p>
+                {% elif is_member %}
+                    <p class="text-body-secondary small">You're part of this team.</p>
+                    <form method="post" action="{% url 'teams:leave' project.slug %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-danger w-100 rounded-3" type="submit">Leave project</button>
+                    </form>
+                {% elif project.is_open %}
+                    <p class="text-body-secondary small">This team has room for new members.</p>
+                    <a class="btn btn-primary w-100 rounded-3" href="{% url 'teams:apply' project.slug %}">
+                        <i class="bi bi-send me-2" aria-hidden="true"></i>Request to join
+                    </a>
+                {% else %}
+                    <p class="text-body-secondary small mb-0">This team isn't accepting new members right now.</p>
+                {% endif %}
+
+                <hr>
+                <a class="text-decoration-none fw-semibold" href="{{ project.get_absolute_url }}">
+                    View project details &rarr;
+                </a>
+            </div>
+        </aside>
+    </div>
+</div>
+
+{% if is_owner %}
+    {% for membership in members %}
+        {% if membership.role == "member" %}
+            <div class="modal fade" id="remove-member-{{ membership.user_id }}" tabindex="-1"
+                 aria-labelledby="remove-member-title-{{ membership.user_id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form class="modal-content rounded-4" method="post"
+                          action="{% url 'teams:remove_member' project.slug membership.user_id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h2 class="modal-title h5 fw-bold" id="remove-member-title-{{ membership.user_id }}">
+                                Remove {{ membership.user.get_full_name|default:membership.user.username }}?
+                            </h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-body-secondary small">
+                                They'll be notified with the reason below, and their spot will open for new applicants.
+                            </p>
+                            <div class="mb-3">
+                                <label class="form-label" for="reason-{{ membership.user_id }}">Reason <span class="text-danger" aria-hidden="true">*</span></label>
+                                <select class="form-select" id="reason-{{ membership.user_id }}" name="reason" required>
+                                    {% for value, label in remove_form.fields.reason.choices %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" for="details-{{ membership.user_id }}">Explanation <span class="text-danger" aria-hidden="true">*</span></label>
+                                <textarea class="form-control" id="details-{{ membership.user_id }}" name="details" rows="3"
+                                          minlength="15" maxlength="300" required
+                                          placeholder="e.g. Missed the last three sprint check-ins without notice."></textarea>
+                                <div class="form-text">{{ remove_form.fields.details.help_text }}</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger rounded-3">Remove member</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+{% endblock %}
