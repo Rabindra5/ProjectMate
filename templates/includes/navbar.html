@@ -1,4 +1,3 @@
-
 <header>
   <nav class="navbar navbar-expand-xl border-bottom" aria-label="Primary navigation">
     <div class="container">
@@ -210,18 +209,95 @@
               </div>
             </div>
 
-            <!-- User greeting -->
-            <span class="text-muted small">
-              Hi, {{ user.first_name|default:user.username }}
-            </span>
+            <!-- Profile dropdown -->
+            <div class="dropdown">
 
-            <!-- Logout -->
-            <form method="post" action="{% url 'accounts:logout' %}">
-              {% csrf_token %}
-              <button class="btn btn-sm btn-outline-danger" type="submit">
-                Log out
-              </button>
-            </form>
+                <button type="button"
+                        class="profile-menu-toggle"
+                        id="profileMenuButton"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        aria-label="Open account menu">
+
+                    {% if user.profile.photo %}
+                        <img src="{{ user.profile.photo.url }}"
+                             alt="Profile picture"
+                             class="navbar-avatar">
+                    {% else %}
+                        <span class="navbar-avatar navbar-avatar-placeholder">
+                            <i class="bi bi-person"
+                               aria-hidden="true"></i>
+                        </span>
+                    {% endif %}
+
+                    <i class="bi bi-chevron-down profile-menu-chevron"
+                       aria-hidden="true"></i>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end profile-dropdown"
+                     aria-labelledby="profileMenuButton">
+
+                    <!-- Account information -->
+                    <div class="profile-dropdown-header">
+
+                        {% if user.profile.photo %}
+                            <img src="{{ user.profile.photo.url }}"
+                                 alt=""
+                                 class="navbar-avatar dropdown-avatar">
+                        {% else %}
+                            <span class="navbar-avatar navbar-avatar-placeholder dropdown-avatar">
+                                <i class="bi bi-person"
+                                   aria-hidden="true"></i>
+                            </span>
+                        {% endif %}
+
+                        <div class="profile-dropdown-user">
+                            <div class="fw-semibold text-truncate">
+                                {{ user.get_full_name|default:user.username }}
+                            </div>
+
+                            <div class="small text-muted text-truncate">
+                                {{ user.email }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="dropdown-divider">
+
+                    <!-- Profile navigation -->
+                    <a class="dropdown-item profile-menu-item"
+                       href="{% url 'accounts:profile' user.username %}">
+                        <i class="bi bi-person-circle"
+                           aria-hidden="true"></i>
+                        View Profile
+                    </a>
+
+                    <a class="dropdown-item profile-menu-item"
+                       href="{% url 'accounts:profile_edit' %}">
+                        <i class="bi bi-pencil-square"
+                           aria-hidden="true"></i>
+                        Edit Profile
+                    </a>
+
+                    <hr class="dropdown-divider">
+
+                    <!-- Logout requires a POST request -->
+                    <form method="post"
+                          action="{% url 'accounts:logout' %}"
+                          class="m-0">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="dropdown-item profile-menu-item text-danger">
+                            <i class="bi bi-box-arrow-right"
+                               aria-hidden="true"></i>
+                            Log out
+                        </button>
+                    </form>
+
+                </div>
+            </div>
 
           </div>
 

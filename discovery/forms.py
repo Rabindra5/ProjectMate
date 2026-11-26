@@ -35,10 +35,26 @@ class UserSkillForm(BootstrapFormMixin, forms.ModelForm):
         fields = ("skill", "proficiency")
 
     def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        # Initialize the user before the parent form.
         self.user = user
-        if user:
-            self.fields["skill"].queryset = Skill.objects.exclude(user_skills__user=user)
+        super().__init__(*args, **kwargs)
+
+        # Exclude skills already added by the current user.
+        if self.user is not None:
+            self.fields["skill"].queryset = Skill.objects.exclude(
+                user_skills__user=self.user
+            )
+
+    def clean(self):
+        """Limit profiles to 25 skills."""
+        cleaned = super().clean()
+
+        if self.user and self.user.user_skills.count() >= 25:
+            raise forms.ValidationError(
+                "You can add up to 25 skills."
+            )
+
+        return cleaned
 
     def clean(self):
         """Limit profiles to 25 skills."""

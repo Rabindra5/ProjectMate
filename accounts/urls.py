@@ -8,6 +8,39 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", views.LogoutView.as_view(), name="logout"),
+    # Resume management
+    path(
+        "profile/resume/delete/",
+        views.ResumeDeleteView.as_view(),
+        name="resume_delete",
+    ),
+    path(
+        "u/<str:username>/resume/",
+        views.ResumeDownloadView.as_view(),
+        name="resume_download",
+    ),
+
+    # Supporting document management
+    path(
+        "profile/documents/add/",
+        views.ProfileDocumentCreateView.as_view(),
+        name="document_add",
+    ),
+    path(
+        "profile/documents/<int:pk>/download/",
+        views.ProfileDocumentDownloadView.as_view(),
+        name="document_download",
+    ),
+    path(
+        "profile/documents/<int:pk>/delete/",
+        views.ProfileDocumentDeleteView.as_view(),
+        name="document_delete",
+    ),
+    path(
+        "profile/documents/<int:pk>/visibility/",
+        views.ProfileDocumentVisibilityView.as_view(),
+        name="document_visibility",
+    ),
     path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_edit"),
     path("profile/links/add/", views.ProfileLinkCreateView.as_view(), name="profile_link_add"),
     path("profile/links/<int:pk>/delete/", views.ProfileLinkDeleteView.as_view(), name="profile_link_delete"),

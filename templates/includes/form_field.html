@@ -1,6 +1,29 @@
+
 <div class="mb-3">
-  {{ field.label_tag }}
-  {{ field }}
-  {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+
+    <label for="{{ field.id_for_label }}" class="form-label">
+        {{ field.label }}
+
+        {% if field.field.required %}
+            <span class="text-danger" aria-hidden="true">*</span>
+        {% endif %}
+    </label>
+
+    {{ field }}
+
+    {% if field.help_text %}
+        <div class="form-text">
+            {{ field.help_text|safe }}
+        </div>
+    {% endif %}
+
+    {% for error in field.errors %}
+        <div class="invalid-feedback d-block">
+            {{ error }}
+        </div>
+    {% endfor %}
+
+    <div class="client-validation-error text-danger small mt-1"
+         aria-live="polite"></div>
+
 </div>

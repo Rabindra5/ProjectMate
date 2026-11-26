@@ -8,17 +8,37 @@ class BootstrapFormMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         for field in self.fields.values():
             widget = field.widget
+
             if isinstance(widget, forms.Select):
                 css_class = "form-select"
             elif isinstance(widget, forms.CheckboxInput):
                 css_class = "form-check-input"
             else:
                 css_class = "form-control"
-            widget.attrs["class"] = f"{widget.attrs.get('class', '')} {css_class}".strip()
-            if field.label and not isinstance(widget, (forms.CheckboxInput, forms.Select)):
+
+            widget.attrs["class"] = (
+                f"{widget.attrs.get('class', '')} {css_class}"
+            ).strip()
+
+            if field.label and not isinstance(
+                widget, (forms.CheckboxInput, forms.Select)
+            ):
                 widget.attrs.setdefault("placeholder", field.label)
+
+    def full_clean(self):
+        """Apply invalid field styling after form validation."""
+        super().full_clean()
+
         for name, field in self.fields.items():
-            if self.errors.get(name):
-                field.widget.attrs["class"] += " is-invalid"
+            classes = field.widget.attrs.get("class", "").split()
+
+            if "is-invalid" in classes:
+                classes.remove("is-invalid")
+
+            if name in self._errors:
+                classes.append("is-invalid")
+
+            field.widget.attrs["class"] = " ".join(classes)

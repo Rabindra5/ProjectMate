@@ -11,7 +11,27 @@
                     d-flex align-items-center justify-content-center
                     flex-shrink-0 fw-bold fs-3"
              style="width: 80px; height: 80px;" aria-hidden="true">
-          {{ object.initials }}
+          {% if object.photo %}
+
+              <img src="{{ object.photo.url }}"
+                   alt="{{ object.display_name }}"
+                   class="rounded-circle border flex-shrink-0"
+                   style="width: 80px; height: 80px; object-fit: cover;">
+
+          {% else %}
+
+              <div class="rounded-circle bg-primary-subtle
+                          text-primary-emphasis d-flex
+                          align-items-center justify-content-center
+                          flex-shrink-0 fw-bold fs-3"
+                   style="width: 80px; height: 80px;"
+                   aria-hidden="true">
+
+                  {{ object.initials }}
+
+              </div>
+
+          {% endif %}
         </div>
 
         <div>
@@ -116,6 +136,86 @@
     </div>
 
     <aside class="col-lg-4">
+      <!-- Resume and supporting documents -->
+      {% if can_view_resume or documents or is_own_profile %}
+
+          <section class="card rounded-4 p-4 mb-4">
+
+              <h2 class="small fw-semibold text-uppercase
+                         text-body-secondary mb-3">
+                  Resume & Documents
+              </h2>
+
+              {% if can_view_resume %}
+
+                  <a href="{% url 'accounts:resume_download' object.user.username %}"
+                     class="btn btn-outline-primary w-100 mb-3">
+
+                      <i class="bi bi-file-earmark-person me-1"></i>
+                      Download resume
+
+                  </a>
+
+                  {% if is_own_profile and not object.resume_is_public %}
+                      <p class="small text-body-secondary">
+                          Your resume is private.
+                      </p>
+                  {% endif %}
+
+              {% endif %}
+
+              {% for document in documents %}
+
+                  <div class="border rounded-3 p-3 mb-2">
+
+                      <div class="d-flex align-items-center gap-2">
+
+                          <i class="bi bi-file-earmark-text
+                                    text-primary fs-5"></i>
+
+                          <div class="flex-grow-1 text-break">
+
+                              <a href="{% url 'accounts:document_download' document.pk %}"
+                                 class="fw-semibold text-decoration-none">
+
+                                  {{ document.title }}
+
+                              </a>
+
+                              {% if is_own_profile %}
+                                  <p class="small text-body-secondary mb-0">
+
+                                      {% if document.is_public %}
+                                          Public document
+                                      {% else %}
+                                          Private document
+                                      {% endif %}
+
+                                  </p>
+                              {% endif %}
+
+                          </div>
+
+                      </div>
+
+                  </div>
+
+              {% endfor %}
+
+              {% if is_own_profile %}
+
+                  <a href="{% url 'accounts:profile_edit' %}"
+                     class="btn btn-sm btn-outline-secondary w-100 mt-2">
+
+                      Manage documents
+
+                  </a>
+
+              {% endif %}
+
+          </section>
+
+      {% endif %}
       {% if is_own_profile %}
         <section class="card rounded-4 p-4 mb-4" aria-labelledby="recently-viewed-title">
           <h2 id="recently-viewed-title"

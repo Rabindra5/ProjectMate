@@ -464,3 +464,122 @@ footer {
     padding-bottom: 10px;
   }
 }
+
+/* Navbar profile menu */
+.profile-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 4px 4px;
+    border: none;
+    border-radius: 30px;
+    background: transparent;
+    color: var(--bs-secondary-color, #64748b);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.profile-menu-toggle:hover,
+.profile-menu-toggle[aria-expanded="true"] {
+    background-color: rgba(79, 70, 229, 0.08);
+}
+
+.profile-menu-toggle:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 3px;
+}
+
+/* Profile picture and default avatar */
+.navbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.navbar-avatar-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e8ebf5;
+    color: #64748b;
+    font-size: 24px;
+}
+
+.profile-menu-chevron {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+.profile-menu-toggle[aria-expanded="true"] .profile-menu-chevron {
+    transform: rotate(180deg);
+}
+
+/* Profile dropdown container */
+.profile-dropdown {
+    width: 290px;
+    max-width: calc(100vw - 32px);
+    padding: 8px;
+    margin-top: 12px !important;
+    border: 1px solid var(--bs-border-color, #e5e7eb);
+    border-radius: 14px;
+    background-color: #ffffff;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.12);
+}
+
+/* Account information inside the dropdown */
+.profile-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+}
+
+.dropdown-avatar {
+    width: 48px;
+    height: 48px;
+}
+
+.profile-dropdown-user {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Profile dropdown actions */
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.profile-menu-item i {
+    font-size: 18px;
+}
+
+.profile-menu-item:hover,
+.profile-menu-item:focus {
+    background-color: rgba(79, 70, 229, 0.07);
+    color: var(--bs-primary);
+}
+
+.profile-menu-item.text-danger:hover,
+.profile-menu-item.text-danger:focus {
+    background-color: rgba(220, 38, 38, 0.07);
+}
+
+.profile-dropdown .dropdown-divider {
+    margin: 6px 8px;
+}
+
+/* Keep the account menu accessible on smaller screens */
+@media (max-width: 991.98px) {
+    .profile-dropdown {
+        margin-top: 8px !important;
+    }
+}
