@@ -1,6 +1,8 @@
 
 {% extends "base.html" %}
 
+{% load discovery_tags %}
+
 {% block title %}{{ object.title }} | ProjectMate{% endblock %}
 
 {% block content %}
@@ -272,6 +274,8 @@
                     </div>
 
                 {% endif %}
+
+                {% similar_projects object %}
 
             </div>
 
