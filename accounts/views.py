@@ -252,6 +252,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         context["document_form"] = ProfileDocumentForm(
             profile=self.object,
         )
+        context["user_skills"] = self.request.user.user_skills.select_related("skill")
 
         return context
 
@@ -514,8 +515,11 @@ PasswordChangeDone = PasswordChangeDoneView.as_view(
 PasswordReset = PasswordResetView.as_view(
     template_name="registration/password_reset_form.html",
     email_template_name="registration/password_reset_email.txt",
+    html_email_template_name="registration/password_reset_email_html.html",
+    subject_template_name="registration/password_reset_subject.txt",
     success_url=reverse_lazy("accounts:password_reset_done"),
 )
+
 PasswordResetDone = PasswordResetDoneView.as_view(
     template_name="registration/password_reset_done.html",
 )

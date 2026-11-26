@@ -97,8 +97,25 @@ PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = FILE_UPLOAD_MAX_MEMORY_SIZE
 
-EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "ProjectMate <noreply@projectmate.local>")
+# Email configuration for password resets and notifications.
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_TIMEOUT = 30
+
+DEFAULT_FROM_EMAIL = (
+    f"ProjectMate <{EMAIL_HOST_USER}>"
+    if EMAIL_HOST_USER
+    else "ProjectMate <support.projectmate@gmail.com>"
+)
+
 MESSAGE_TAGS = {"error": "danger"}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REAPPLY_COOLDOWN_DAYS = 7
