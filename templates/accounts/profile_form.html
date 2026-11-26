@@ -1,0 +1,1489 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit profile | ProjectMate{% endblock %}
+
+{% block content %}
+
+<style>
+    .profile-avatar {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        flex-shrink: 0;
+        cursor: pointer;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 50%;
+        padding: 0;
+        background: var(--bs-tertiary-bg);
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .avatar-action {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: var(--bs-primary);
+        color: white;
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: var(--bs-primary);
+        font-size: 32px;
+    }
+
+    .photo-preview {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid var(--bs-border-color);
+    }
+
+    .photo-preview-placeholder {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: var(--bs-tertiary-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        color: var(--bs-secondary-color);
+    }
+
+    .client-validation-error {
+        font-size: 0.875rem;
+        color: var(--bs-danger);
+    }
+
+    .client-validation-error:empty {
+        display: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: var(--bs-danger) !important;
+    }
+
+    .profile-section {
+        margin-bottom: 24px;
+    }
+
+    .document-filename {
+        overflow-wrap: anywhere;
+    }
+</style>
+
+<div class="container py-5">
+
+    <!-- Page heading -->
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-center gap-3 mb-4">
+
+        <div>
+            <h1 class="h2 fw-bold mb-1">Edit profile</h1>
+
+            <p class="text-body-secondary mb-0">
+                Manage your personal, academic and professional information.
+            </p>
+        </div>
+
+        <a href="{{ object.get_absolute_url }}"
+           class="btn btn-outline-primary">
+            View my profile
+        </a>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <!-- Main profile form -->
+            <form id="profileForm"
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate>
+
+                {% csrf_token %}
+
+                {% include "includes/form_errors.html" with form=form %}
+                {% include "includes/form_errors.html" with form=user_form %}
+
+                <!-- Profile picture -->
+                <section class="card rounded-4 p-4 profile-section">
+
+                    <h2 class="h5 fw-semibold mb-4">
+                        Profile picture
+                    </h2>
+
+                    <div class="d-flex align-items-center gap-4">
+
+                        <button type="button"
+                                class="profile-avatar"
+                                data-bs-toggle="modal"
+                                data-bs-target="#photoModal"
+                                aria-label="Upload or change profile picture">
+
+                            <img id="profileAvatarImage"
+                                 {% if object.photo %}
+                                     src="{{ object.photo.url }}"
+                                 {% else %}
+                                     hidden
+                                 {% endif %}
+                                 alt="Profile picture">
+
+                            <span id="profileAvatarPlaceholder"
+                                  class="avatar-placeholder
+                                  {% if object.photo %}d-none{% endif %}">
+
+                                <i class="bi bi-cloud-arrow-up"></i>
+
+                            </span>
+
+                            <span id="profileAvatarEdit"
+                                  class="avatar-action
+                                  {% if not object.photo %}d-none{% endif %}">
+
+                                <i class="bi bi-pencil-fill"></i>
+
+                            </span>
+
+                        </button>
+
+                        <div>
+
+                            <p class="fw-semibold mb-1">
+                                {{ object.display_name }}
+                            </p>
+
+                            <p class="text-body-secondary small mb-1">
+                                @{{ request.user.username }}
+                            </p>
+
+                            <p class="text-body-secondary small mb-0">
+                                Click the avatar to upload or change your photo.
+                            </p>
+
+                            <p id="photoPendingMessage"
+                               class="small text-primary mt-2 mb-0 d-none">
+                                Click Save profile to save your photo changes.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    {% for error in form.photo.errors %}
+                        <div class="text-danger small mt-3">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </section>
+
+                <!-- Required field information -->
+                <p class="small text-body-secondary mb-3">
+                    <span class="text-danger fw-semibold">*</span>
+                    Required fields
+                </p>
+
+                <!-- Personal information -->
+                <section class="card rounded-4 p-4 profile-section">
+
+                    <h2 class="h5 fw-semibold mb-4">
+                        Personal information
+                    </h2>
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            {% include "includes/form_field.html" with field=user_form.first_name %}
+                        </div>
+
+                        <div class="col-md-6">
+                            {% include "includes/form_field.html" with field=user_form.last_name %}
+                        </div>
+
+                    </div>
+
+                    {% include "includes/form_field.html" with field=user_form.email %}
+
+                    {% include "includes/form_field.html" with field=form.phone_number %}
+
+                    {% include "includes/form_field.html" with field=form.headline %}
+
+                    {% include "includes/form_field.html" with field=form.bio %}
+
+                </section>
+
+                <!-- Academic information -->
+                <section class="card rounded-4 p-4 profile-section">
+
+                    <h2 class="h5 fw-semibold mb-4">
+                        Academic information
+                    </h2>
+
+                    {% include "includes/form_field.html" with field=form.university %}
+
+                    {% include "includes/form_field.html" with field=form.program %}
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            {% include "includes/form_field.html" with field=form.year_of_study %}
+                        </div>
+
+                        <div class="col-md-6">
+                            {% include "includes/form_field.html" with field=form.availability_hours %}
+                        </div>
+
+                    </div>
+
+                    <div class="form-check mt-2">
+
+                        {{ form.open_to_teams }}
+
+                        <label class="form-check-label"
+                               for="{{ form.open_to_teams.id_for_label }}">
+                            Open to joining teams
+                        </label>
+
+                    </div>
+
+                    {% for error in form.open_to_teams.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </section>
+
+                <!-- Resume -->
+                <section class="card rounded-4 p-4 profile-section">
+
+                    <h2 class="h5 fw-semibold mb-2">
+                        Resume
+                    </h2>
+
+                    <p class="text-body-secondary small mb-4">
+                        Upload your resume to showcase your experience,
+                        education and technical skills.
+                    </p>
+
+                    {% if object.resume %}
+
+                        <div class="border rounded-3 p-3 mb-4">
+
+                            <div class="d-flex align-items-center gap-3">
+
+                                <i class="bi bi-file-earmark-person
+                                          fs-2 text-primary"></i>
+
+                                <div class="flex-grow-1">
+
+                                    <p class="fw-semibold mb-1">
+                                        Current resume
+                                    </p>
+
+                                    <p class="small text-body-secondary mb-2">
+                                        Resume uploaded successfully
+                                    </p>
+
+                                    {% if object.resume_is_public %}
+
+                                        <span class="badge bg-success-subtle
+                                                     text-success-emphasis">
+                                            Public
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-secondary-subtle
+                                                     text-secondary-emphasis">
+                                            Private
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+
+                                <a href="{% url 'accounts:resume_download' request.user.username %}"
+                                   class="btn btn-sm btn-outline-primary">
+
+                                    <i class="bi bi-download me-1"></i>
+                                    Download
+
+                                </a>
+
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        id="replaceResumeButton">
+
+                                    <i class="bi bi-arrow-repeat me-1"></i>
+                                    Replace
+
+                                </button>
+
+                                <button type="submit"
+                                        form="resumeDeleteForm"
+                                        class="btn btn-sm btn-outline-danger">
+
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                    <div id="resumeUploadSection"
+                         class="{% if object.resume and not form.resume.errors %}d-none{% endif %}">
+
+                        {% include "includes/form_field.html" with field=form.resume %}
+
+                        <p id="resumePendingMessage"
+                           class="small text-primary d-none">
+
+                            Click Save profile to save your selected resume.
+
+                        </p>
+
+                    </div>
+
+                    <div class="form-check mt-3">
+
+                        {{ form.resume_is_public }}
+
+                        <label class="form-check-label"
+                               for="{{ form.resume_is_public.id_for_label }}">
+
+                            Make my resume public
+
+                        </label>
+
+                    </div>
+
+                    <p class="small text-body-secondary mt-2 mb-0">
+                        Your resume remains private unless you choose
+                        to make it public.
+                    </p>
+
+                </section>
+
+            </form>
+
+            <!-- Separate resume deletion form -->
+            {% if object.resume %}
+
+                <form id="resumeDeleteForm"
+                      method="post"
+                      action="{% url 'accounts:resume_delete' %}"
+                      onsubmit="return confirm('Remove your current resume?');">
+
+                    {% csrf_token %}
+
+                </form>
+
+            {% endif %}
+
+            <!-- Supporting documents -->
+            <section class="card rounded-4 p-4 profile-section">
+
+                <h2 class="h5 fw-semibold mb-2">
+                    Supporting documents
+                </h2>
+
+                <p class="text-body-secondary small">
+                    Add certificates, academic achievements, portfolio
+                    documents or other relevant supporting files.
+                </p>
+
+                <p class="small text-body-secondary mb-3">
+                    {{ documents.count }} of 5 documents uploaded
+                </p>
+
+                {% for document in documents %}
+
+                    <div class="border rounded-3 p-3 mb-3">
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <i class="bi bi-file-earmark-text
+                                      fs-2 text-primary"></i>
+
+                            <div class="flex-grow-1 document-filename">
+
+                                <p class="fw-semibold mb-1">
+                                    {{ document.title }}
+                                </p>
+
+                                <p class="small text-body-secondary mb-2">
+                                    {{ document.original_filename }}
+                                </p>
+
+                                {% if document.is_public %}
+
+                                    <span class="badge bg-success-subtle
+                                                 text-success-emphasis">
+                                        Public
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary-subtle
+                                                 text-secondary-emphasis">
+                                        Private
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+
+                            <a href="{% url 'accounts:document_download' document.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+
+                                <i class="bi bi-download me-1"></i>
+                                Download
+
+                            </a>
+
+                            <form method="post"
+                                  action="{% url 'accounts:document_visibility' document.pk %}">
+
+                                {% csrf_token %}
+
+                                {% if document.is_public %}
+
+                                    <input type="hidden"
+                                           name="is_public"
+                                           value="0">
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-secondary">
+                                        Make private
+                                    </button>
+
+                                {% else %}
+
+                                    <input type="hidden"
+                                           name="is_public"
+                                           value="1">
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-secondary">
+                                        Make public
+                                    </button>
+
+                                {% endif %}
+
+                            </form>
+
+                            <form method="post"
+                                  action="{% url 'accounts:document_delete' document.pk %}"
+                                  onsubmit="return confirm('Delete this document?');">
+
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="border rounded-3 p-4 text-center mb-3">
+
+                        <i class="bi bi-folder2-open fs-2
+                                  text-body-secondary"></i>
+
+                        <p class="text-body-secondary mt-2 mb-0">
+                            No supporting documents uploaded yet.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+                {% if documents.count < 5 %}
+
+                    <form id="documentUploadForm"
+                          method="post"
+                          enctype="multipart/form-data"
+                          action="{% url 'accounts:document_add' %}"
+                          novalidate>
+
+                        {% csrf_token %}
+
+                        <h3 class="h6 fw-semibold mt-3 mb-3">
+                            Upload a document
+                        </h3>
+
+                        {% include "includes/form_errors.html" with form=document_form %}
+
+                        {% include "includes/form_field.html" with field=document_form.title %}
+
+                        {% include "includes/form_field.html" with field=document_form.file %}
+
+                        <div class="form-check mb-3">
+
+                            {{ document_form.is_public }}
+
+                            <label class="form-check-label"
+                                   for="{{ document_form.is_public.id_for_label }}">
+
+                                Make this document public
+
+                            </label>
+
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-outline-primary">
+
+                            <i class="bi bi-upload me-1"></i>
+                            Upload document
+
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <p class="small text-body-secondary mb-0">
+                        You have reached the maximum of five documents.
+                    </p>
+
+                {% endif %}
+
+            </section>
+
+        </div>
+
+        <!-- Profile management sidebar -->
+        <aside class="col-lg-4">
+
+            <!-- Profile links -->
+            <section class="card rounded-4 p-4 profile-section">
+
+                <h2 class="h5 fw-semibold mb-3">
+                    Profile links
+                </h2>
+
+                <p class="small text-body-secondary">
+                    Connect your GitHub, LinkedIn, portfolio
+                    or other websites.
+                </p>
+
+                {% for link in profile_links %}
+
+                    <div class="border rounded-3 p-3 mb-2">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-2">
+
+                            <a href="{{ link.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-decoration-none text-break">
+
+                                <i class="bi bi-link-45deg me-1"></i>
+                                {{ link.get_label_display }}
+
+                            </a>
+
+                            <form method="post"
+                                  action="{% url 'accounts:profile_link_delete' link.pk %}"
+                                  onsubmit="return confirm('Remove this profile link?');">
+
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        aria-label="Remove profile link">
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <p class="small text-body-secondary">
+                        No profile links added yet.
+                    </p>
+
+                {% endfor %}
+
+                <a href="{% url 'accounts:profile_link_add' %}"
+                   class="btn btn-outline-primary w-100 mt-2">
+
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Add profile link
+
+                </a>
+
+            </section>
+
+            <!-- Skills -->
+            <section class="card rounded-4 p-4 profile-section">
+
+                <h2 class="h5 fw-semibold mb-2">
+                    Skills
+                </h2>
+
+                <p class="small text-body-secondary">
+                    Keep your skills updated to help other students
+                    find you for relevant projects.
+                </p>
+
+                {% if user_skills %}
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for item in user_skills %}
+                            <div class="border rounded-3 px-3 py-2">
+                                <div class="small fw-semibold">
+                                    {{ item.skill.name }}
+                                </div>
+
+                                <div class="small text-body-secondary">
+                                    {{ item.get_proficiency_display }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="small text-body-secondary mb-3">
+                        No skills added yet.
+                    </p>
+                {% endif %}
+
+                <a href="{% url 'discovery:skills' %}"
+                   class="btn btn-outline-primary w-100">
+                    Manage skills
+                </a>
+
+            </section>
+
+            <!-- Account security -->
+            <section class="card rounded-4 p-4 profile-section">
+
+                <h2 class="h5 fw-semibold mb-2">
+                    Account security
+                </h2>
+
+                <p class="small text-body-secondary">
+                    Manage your account password and security.
+                </p>
+
+                <a href="{% url 'accounts:password_change' %}"
+                   class="btn btn-outline-secondary w-100">
+
+                    Change password
+
+                </a>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+    <!-- Final profile actions -->
+    <div class="border-top pt-4 mt-3">
+
+        <div class="d-flex flex-wrap justify-content-between
+                    align-items-center gap-3">
+
+            <p class="small text-body-secondary mb-0">
+
+                <span class="text-danger">*</span>
+                Please complete all required fields before saving.
+
+            </p>
+
+            <div class="d-flex gap-2">
+
+                <a href="{{ object.get_absolute_url }}"
+                   class="btn btn-outline-secondary px-4">
+
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        form="profileForm"
+                        class="btn btn-primary px-4">
+
+                    Save profile
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Profile picture modal -->
+<div class="modal fade"
+     id="photoModal"
+     tabindex="-1"
+     aria-labelledby="photoModalTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+
+                <h2 class="modal-title fs-5"
+                    id="photoModalTitle">
+
+                    {% if object.photo %}
+                        Edit profile picture
+                    {% else %}
+                        Upload profile picture
+                    {% endif %}
+
+                </h2>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+            <div class="modal-body p-4">
+
+                <div class="d-flex justify-content-center mb-4">
+
+                    <img id="modalPhotoPreview"
+                         class="photo-preview"
+                         {% if object.photo %}
+                             src="{{ object.photo.url }}"
+                         {% else %}
+                             hidden
+                         {% endif %}
+                         alt="Profile picture preview">
+
+                    <div id="modalPhotoPlaceholder"
+                         class="photo-preview-placeholder
+                         {% if object.photo %}d-none{% endif %}">
+
+                        <i class="bi bi-person"></i>
+
+                    </div>
+
+                </div>
+
+                <label for="photoSelection"
+                       class="form-label">
+
+                    Choose a profile picture
+
+                </label>
+
+                <input type="file"
+                       id="photoSelection"
+                       class="form-control"
+                       accept=".jpg,.jpeg,.png,.webp">
+
+                <!-- These fields belong to the main profile form. -->
+                <input type="file"
+                       id="profilePhotoInput"
+                       name="photo"
+                       form="profileForm"
+                       accept=".jpg,.jpeg,.png,.webp"
+                       hidden>
+
+                <input type="checkbox"
+                       id="profilePhotoClear"
+                       name="photo-clear"
+                       form="profileForm"
+                       hidden>
+
+                <div class="form-text">
+                    JPG, PNG or WEBP. Maximum 2 MB.
+                    Maximum dimensions: 4096 × 4096 pixels.
+                </div>
+
+                <div id="photoValidationError"
+                     class="text-danger small mt-2"
+                     aria-live="polite">
+                </div>
+
+                <p class="small text-body-secondary mt-3 mb-0">
+                    Photo changes will be saved when you click Save profile.
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        id="removePhotoButton"
+                        class="btn btn-outline-danger me-auto
+                        {% if not object.photo %}d-none{% endif %}">
+
+                    <i class="bi bi-trash me-1"></i>
+                    Remove
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button type="button"
+                        id="applyPhotoButton"
+                        class="btn btn-primary"
+                        disabled>
+
+                    Apply photo
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const profileForm = document.getElementById("profileForm");
+    const documentForm = document.getElementById("documentUploadForm");
+
+    // Validate individual fields and display inline feedback.
+    function validateField(field) {
+
+        if (
+            field.disabled ||
+            field.type === "hidden" ||
+            field.type === "checkbox" ||
+            field.type === "radio" ||
+            field.type === "submit" ||
+            field.type === "button"
+        ) {
+            return true;
+        }
+
+        const wrapper = field.closest(".mb-3");
+
+        if (!wrapper) {
+            return true;
+        }
+
+        let feedback = wrapper.querySelector(
+            ".client-validation-error"
+        );
+
+        if (!feedback) {
+            feedback = document.createElement("div");
+            feedback.className = "client-validation-error mt-1";
+            feedback.setAttribute("aria-live", "polite");
+            wrapper.appendChild(feedback);
+        }
+
+        let error = "";
+        const value = field.value.trim();
+
+        // Validate mandatory fields.
+        if (field.required && !value) {
+            error = "This field is required.";
+        }
+
+        // Validate email addresses.
+        else if (field.type === "email" && value) {
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailPattern.test(value)) {
+                error = "Enter a valid email address.";
+            }
+
+        }
+
+        // Validate optional phone numbers.
+        else if (field.name === "phone_number" && value) {
+
+            const phonePattern = /^\+?[0-9\s().-]+$/;
+            const digits = value.replace(/\D/g, "");
+
+            if (!phonePattern.test(value)) {
+                error = "Enter a valid phone number.";
+            }
+
+            else if (digits.length < 7 || digits.length > 15) {
+                error = "Phone numbers must contain between 7 and 15 digits.";
+            }
+
+        }
+
+        // Validate weekly availability.
+        else if (field.name === "availability_hours" && value) {
+
+            const hours = Number(value);
+
+            if (
+                !Number.isInteger(hours) ||
+                hours < 0 ||
+                hours > 168
+            ) {
+                error = "Enter a value between 0 and 168 hours.";
+            }
+
+        }
+
+        // Validate uploaded resumes and supporting documents.
+        else if (field.type === "file" && field.files.length) {
+
+            const file = field.files[0];
+
+            const extension = file.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+            const allowedExtensions = field.name === "resume"
+                ? ["pdf", "docx"]
+                : ["pdf", "docx", "jpg", "jpeg", "png"];
+
+            if (!allowedExtensions.includes(extension)) {
+
+                error = field.name === "resume"
+                    ? "Upload a PDF or DOCX file."
+                    : "Upload a PDF, DOCX, JPG or PNG file.";
+
+            }
+
+            else if (file.size === 0) {
+                error = "The selected file is empty.";
+            }
+
+            else if (file.size > 5 * 1024 * 1024) {
+                error = "The file must be 5 MB or smaller.";
+            }
+
+        }
+
+        // Apply remaining native browser validation rules.
+        if (!error && !field.validity.valid) {
+            error = field.validationMessage;
+        }
+
+        feedback.textContent = error;
+
+        field.classList.toggle("is-invalid", Boolean(error));
+
+        if (error) {
+            field.setAttribute("aria-invalid", "true");
+        } else {
+            field.removeAttribute("aria-invalid");
+        }
+
+        return !error;
+
+    }
+
+    // Enable real-time validation for a specific form.
+    function initializeValidation(form) {
+
+        if (!form) {
+            return;
+        }
+
+        const fields = Array.from(form.elements).filter(function (field) {
+
+            return field.matches(
+                "input:not([hidden]), select, textarea"
+            );
+
+        });
+
+        fields.forEach(function (field) {
+
+            field.addEventListener("input", function () {
+                validateField(field);
+            });
+
+            field.addEventListener("blur", function () {
+                validateField(field);
+            });
+
+            field.addEventListener("change", function () {
+                validateField(field);
+            });
+
+        });
+
+        form.addEventListener("submit", function (event) {
+
+            let firstInvalidField = null;
+
+            fields.forEach(function (field) {
+
+                if (!validateField(field) && !firstInvalidField) {
+                    firstInvalidField = field;
+                }
+
+            });
+
+            if (firstInvalidField) {
+
+                event.preventDefault();
+
+                firstInvalidField.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+                firstInvalidField.focus({
+                    preventScroll: true
+                });
+
+            }
+
+        });
+
+    }
+
+    initializeValidation(profileForm);
+    initializeValidation(documentForm);
+
+
+    // Resume replacement and selection.
+    const replaceResumeButton = document.getElementById(
+        "replaceResumeButton"
+    );
+
+    const resumeUploadSection = document.getElementById(
+        "resumeUploadSection"
+    );
+
+    const resumeInput = document.getElementById(
+        "{{ form.resume.id_for_label }}"
+    );
+
+    const resumePendingMessage = document.getElementById(
+        "resumePendingMessage"
+    );
+
+    if (replaceResumeButton && resumeInput) {
+
+        replaceResumeButton.addEventListener("click", function () {
+
+            resumeUploadSection.classList.remove("d-none");
+            resumeInput.click();
+
+        });
+
+    }
+
+    if (resumeInput) {
+
+        resumeInput.addEventListener("change", function () {
+
+            const valid = validateField(resumeInput);
+
+            resumePendingMessage.classList.toggle(
+                "d-none",
+                !valid || !resumeInput.files.length
+            );
+
+        });
+
+    }
+
+
+    // Profile picture modal and preview management.
+    const photoModal = document.getElementById("photoModal");
+    const photoSelection = document.getElementById("photoSelection");
+
+    const photoInput = document.getElementById("profilePhotoInput");
+    const photoClear = document.getElementById("profilePhotoClear");
+
+    const avatarImage = document.getElementById("profileAvatarImage");
+
+    const avatarPlaceholder = document.getElementById(
+        "profileAvatarPlaceholder"
+    );
+
+    const avatarEdit = document.getElementById("profileAvatarEdit");
+
+    const modalPreview = document.getElementById("modalPhotoPreview");
+
+    const modalPlaceholder = document.getElementById(
+        "modalPhotoPlaceholder"
+    );
+
+    const photoError = document.getElementById("photoValidationError");
+
+    const applyPhotoButton = document.getElementById(
+        "applyPhotoButton"
+    );
+
+    const removePhotoButton = document.getElementById(
+        "removePhotoButton"
+    );
+
+    const photoPendingMessage = document.getElementById(
+        "photoPendingMessage"
+    );
+
+    let selectedPhoto = null;
+    let selectedPhotoURL = null;
+    let appliedPhotoURL = null;
+    let selectionVersion = 0;
+
+    let currentPhotoURL = avatarImage.hidden
+        ? null
+        : avatarImage.src;
+
+
+    function showModalPreview(url) {
+
+        if (url) {
+
+            modalPreview.src = url;
+            modalPreview.hidden = false;
+
+            modalPlaceholder.classList.add("d-none");
+
+        } else {
+
+            modalPreview.removeAttribute("src");
+            modalPreview.hidden = true;
+
+            modalPlaceholder.classList.remove("d-none");
+
+        }
+
+    }
+
+
+    function showAvatar(url) {
+
+        if (url) {
+
+            avatarImage.src = url;
+            avatarImage.hidden = false;
+
+            avatarPlaceholder.classList.add("d-none");
+            avatarEdit.classList.remove("d-none");
+
+        } else {
+
+            avatarImage.removeAttribute("src");
+            avatarImage.hidden = true;
+
+            avatarPlaceholder.classList.remove("d-none");
+            avatarEdit.classList.add("d-none");
+
+        }
+
+    }
+
+
+    function clearSelectedPhotoURL() {
+
+        if (selectedPhotoURL) {
+            URL.revokeObjectURL(selectedPhotoURL);
+            selectedPhotoURL = null;
+        }
+
+    }
+
+
+    function resetPhotoSelection() {
+
+        selectionVersion++;
+
+        selectedPhoto = null;
+
+        clearSelectedPhotoURL();
+
+        photoSelection.value = "";
+        photoError.textContent = "";
+
+        photoSelection.classList.remove("is-invalid");
+
+        applyPhotoButton.disabled = true;
+
+        showModalPreview(currentPhotoURL);
+
+    }
+
+
+    function showPhotoError(message) {
+
+        selectedPhoto = null;
+
+        photoError.textContent = message;
+
+        photoSelection.classList.add("is-invalid");
+
+        applyPhotoButton.disabled = true;
+
+        showModalPreview(currentPhotoURL);
+
+    }
+
+
+    photoModal.addEventListener("show.bs.modal", function () {
+
+        resetPhotoSelection();
+
+        removePhotoButton.classList.toggle(
+            "d-none",
+            !currentPhotoURL
+        );
+
+        document.getElementById("photoModalTitle").textContent =
+            currentPhotoURL
+                ? "Edit profile picture"
+                : "Upload profile picture";
+
+    });
+
+
+    photoModal.addEventListener("hidden.bs.modal", function () {
+        resetPhotoSelection();
+    });
+
+
+    // Validate image type, size and dimensions before applying it.
+    photoSelection.addEventListener("change", function () {
+
+        const version = ++selectionVersion;
+
+        selectedPhoto = null;
+
+        clearSelectedPhotoURL();
+
+        photoError.textContent = "";
+
+        photoSelection.classList.remove("is-invalid");
+
+        applyPhotoButton.disabled = true;
+
+        const file = photoSelection.files[0];
+
+        if (!file) {
+            showModalPreview(currentPhotoURL);
+            return;
+        }
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        const allowedExtensions = [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+        ];
+
+        const extension = file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+        if (
+            !allowedExtensions.includes(extension) ||
+            (file.type && !allowedTypes.includes(file.type))
+        ) {
+            showPhotoError("Upload a JPG, PNG or WEBP image.");
+            return;
+        }
+
+        if (file.size === 0) {
+            showPhotoError("The selected image is empty.");
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            showPhotoError("Images must be 2 MB or smaller.");
+            return;
+        }
+
+        const imageURL = URL.createObjectURL(file);
+
+        selectedPhotoURL = imageURL;
+
+        const image = new Image();
+
+        image.onload = function () {
+
+            if (version !== selectionVersion) {
+                return;
+            }
+
+            if (
+                image.naturalWidth > 4096 ||
+                image.naturalHeight > 4096
+            ) {
+
+                showPhotoError(
+                    "Image dimensions must not exceed 4096 × 4096 pixels."
+                );
+
+                clearSelectedPhotoURL();
+
+                return;
+
+            }
+
+            selectedPhoto = file;
+
+            showModalPreview(imageURL);
+
+            applyPhotoButton.disabled = false;
+
+        };
+
+        image.onerror = function () {
+
+            if (version !== selectionVersion) {
+                return;
+            }
+
+            showPhotoError("Upload a valid image file.");
+
+            clearSelectedPhotoURL();
+
+        };
+
+        image.src = imageURL;
+
+    });
+
+
+    // Apply the selected photo to the main profile form.
+    applyPhotoButton.addEventListener("click", function () {
+
+        if (!selectedPhoto) {
+            return;
+        }
+
+        const transfer = new DataTransfer();
+
+        transfer.items.add(selectedPhoto);
+
+        photoInput.files = transfer.files;
+
+        photoClear.checked = false;
+
+        if (appliedPhotoURL) {
+            URL.revokeObjectURL(appliedPhotoURL);
+        }
+
+        appliedPhotoURL = URL.createObjectURL(selectedPhoto);
+
+        currentPhotoURL = appliedPhotoURL;
+
+        showAvatar(currentPhotoURL);
+
+        photoPendingMessage.textContent =
+            "Click Save profile to save your new profile picture.";
+
+        photoPendingMessage.classList.remove("d-none");
+
+        bootstrap.Modal.getOrCreateInstance(photoModal).hide();
+
+    });
+
+
+    // Mark the existing photo for removal.
+    removePhotoButton.addEventListener("click", function () {
+
+        if (!confirm("Remove your profile picture?")) {
+            return;
+        }
+
+        photoInput.value = "";
+
+        photoClear.checked = true;
+
+        if (appliedPhotoURL) {
+            URL.revokeObjectURL(appliedPhotoURL);
+            appliedPhotoURL = null;
+        }
+
+        currentPhotoURL = null;
+
+        showAvatar(null);
+
+        photoPendingMessage.textContent =
+            "Click Save profile to confirm photo removal.";
+
+        photoPendingMessage.classList.remove("d-none");
+
+        bootstrap.Modal.getOrCreateInstance(photoModal).hide();
+
+    });
+
+});
+</script>
+
+{% endblock %}

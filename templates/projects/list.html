@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Projects | ProjectMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>Browse Projects</h1>
+    <p class="text-muted">Find projects and collaborate with others.</p>
+
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-md-4">
+            <div class="card h-100 p-4">
+                <h2 class="h5">{{ project.title }}</h2>
+                <p>{{ project.summary }}</p>
+                <p class="text-muted">
+                    Category: {{ project.category.name }}
+                </p>
+                <span class="badge text-bg-secondary">
+                    {{ project.get_status_display }}
+                </span>
+            </div>
+        </div>
+        {% empty %}
+        <p>No projects available yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

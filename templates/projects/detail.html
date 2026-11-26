@@ -1,0 +1,283 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ object.title }} | ProjectMate{% endblock %}
+
+{% block content %}
+
+<div class="project-detail-page">
+    <div class="container py-4">
+
+        <!-- Breadcrumb -->
+        <nav class="mb-4" aria-label="Breadcrumb">
+            <div class="project-breadcrumb">
+                <a href="{% url 'projects:list' %}">
+                    Browse projects
+                </a>
+                <span>/</span>
+                <span>{{ object.title }}</span>
+            </div>
+        </nav>
+
+        <div class="row g-4">
+
+            <!-- LEFT COLUMN -->
+            <div class="col-lg-8">
+
+                <!-- Project Header -->
+                <div class="project-detail-card mb-4">
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="project-tag">
+                            {{ object.category.name }}
+                        </span>
+
+                        <span class="project-tag">
+                            {{ object.get_project_type_display }}
+                        </span>
+
+                        <span class="project-tag
+                            {% if object.status == 'recruiting' %}
+                                project-tag-success
+                            {% elif object.status == 'completed' %}
+                                project-tag-completed
+                            {% endif %}">
+                            {{ object.get_status_display }}
+                        </span>
+                    </div>
+
+                    <h1 class="project-detail-title">
+                        {{ object.title }}
+                    </h1>
+
+                    <p class="project-detail-summary">
+                        {{ object.summary }}
+                    </p>
+
+                    <div class="project-owner">
+                        <div class="project-avatar">
+                            {{ object.owner.username|slice:":1"|upper }}
+                        </div>
+
+                        <span>
+                            Led by
+                            <strong>{{ object.owner.username }}</strong>
+                        </span>
+                    </div>
+
+                    {% if user == object.owner or user.is_staff %}
+                        <div class="d-flex gap-2 mt-4">
+
+                            <a class="btn btn-outline-primary btn-sm"
+                               href="{% url 'projects:edit' object.slug %}">
+                                Edit project
+                            </a>
+
+                            <a class="btn btn-outline-danger btn-sm"
+                               href="{% url 'projects:delete' object.slug %}">
+                                Delete
+                            </a>
+
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Project Information -->
+                <div class="project-detail-card mb-4">
+
+                    <div class="project-section-label">
+                        GOAL
+                    </div>
+
+                    <p class="project-info-text">
+                        {{ object.summary }}
+                    </p>
+
+                    <div class="project-section-label mt-4">
+                        DESCRIPTION
+                    </div>
+
+                    <div class="project-info-text">
+                        {{ object.description|linebreaks }}
+                    </div>
+
+                    <div class="project-section-label mt-4">
+                        SKILLS NEEDED
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+
+                        {% for skill in object.required_skills.all %}
+                            <span class="project-skill-tag">
+                                {{ skill.name }}
+                            </span>
+                        {% empty %}
+                            <span class="text-muted small">
+                                No specific skills listed.
+                            </span>
+                        {% endfor %}
+
+                    </div>
+
+                    <hr class="project-divider">
+
+                    <!-- Project Metadata -->
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <div class="project-section-label">
+                                TEAM CAPACITY
+                            </div>
+
+                            <p class="project-info-text mb-0">
+                                {{ object.member_count }}/{{ object.max_members }}
+                                members
+                                {% if object.is_open %}
+                                    · {{ object.open_slots }} open
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="project-section-label">
+                                DEADLINE
+                            </div>
+
+                            <p class="project-info-text mb-0">
+                                {% if object.deadline %}
+                                    {{ object.deadline|date:"M j, Y" }}
+                                {% else %}
+                                    No deadline
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="project-section-label">
+                                WORK ARRANGEMENT
+                            </div>
+
+                            <p class="project-info-text mb-0">
+                                {% if object.is_remote %}
+                                    Remote
+                                {% else %}
+                                    {{ object.location|default:"On-site" }}
+                                {% endif %}
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Team and Resources -->
+                <div class="project-detail-card">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="project-card-heading mb-0">
+                            Team &amp; resources
+                        </h2>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+
+                        <div class="project-avatar">
+                            {{ object.owner.username|slice:":1"|upper }}
+                        </div>
+
+                        <div>
+                            <strong class="d-block">
+                                {{ object.owner.username }}
+                            </strong>
+
+                            <span class="text-muted small">
+                                Owner
+                            </span>
+                        </div>
+
+                    </div>
+
+                    {% if object.repo_url %}
+                        <a href="{{ object.repo_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="project-repo-link">
+                            View repository &rarr;
+                        </a>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="col-lg-4">
+
+                {% if not user.is_authenticated %}
+
+                    <div class="project-detail-card">
+                        <h2 class="project-card-heading">
+                            Interested in joining?
+                        </h2>
+
+                        <p class="text-muted small">
+                            Log in to request to join this project.
+                        </p>
+
+                        <a href="{% url 'accounts:login' %}"
+                           class="btn btn-primary w-100">
+                            Log in
+                        </a>
+                    </div>
+
+                {% elif user != object.owner and not user.is_staff %}
+
+                    <div class="project-detail-card">
+                        <h2 class="project-card-heading">
+                            Request to join
+                        </h2>
+
+                        <p class="text-muted small mb-3">
+                            Interested in contributing to this project?
+                        </p>
+
+
+                        {% if object.is_open %}
+
+                            <p class="text-muted small mb-3">
+                                This project is accepting new members.
+                            </p>
+
+                            <a href="{% url 'teams:apply' object.slug %}"
+                               class="btn btn-primary w-100">
+                                <i class="bi bi-send me-2"></i>
+                                Request to join
+                            </a>
+
+                            <p class="text-muted small mt-3 mb-0">
+                                <i class="bi bi-lock me-1"></i>
+                                Your application will be reviewed by the project owner.
+                            </p>
+
+                        {% else %}
+
+                            <p class="text-muted small mb-0">
+                                This project is not accepting new members.
+                            </p>
+
+                        {% endif %}
+
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

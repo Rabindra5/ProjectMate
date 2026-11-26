@@ -1,0 +1,18 @@
+
+{% extends "base.html" %}
+{% block title %}Delete project | ProjectMate{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h1>Delete {{ object.title }}?</h1>
+    <p>This permanently removes the project and its updates.</p>
+    <form method="post" data-confirm="Delete this project permanently?">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger" type="submit">
+            Delete project
+        </button>
+        <a class="btn btn-link" href="{{ object.get_absolute_url }}">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

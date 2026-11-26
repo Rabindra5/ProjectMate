@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block title %}Request decision | ProjectMate{% endblock %}{% block content %}<div class="container py-5"><h1>Request decision</h1><form method="post">{% csrf_token %}{% for field in form %}{% include "includes/form_field.html" %}{% endfor %}<button class="btn btn-primary" type="submit">Save decision</button></form></div>{% endblock %}
