@@ -682,11 +682,29 @@
                     find you for relevant projects.
                 </p>
 
+                {% if user_skills %}
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for item in user_skills %}
+                            <div class="border rounded-3 px-3 py-2">
+                                <div class="small fw-semibold">
+                                    {{ item.skill.name }}
+                                </div>
+
+                                <div class="small text-body-secondary">
+                                    {{ item.get_proficiency_display }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="small text-body-secondary mb-3">
+                        No skills added yet.
+                    </p>
+                {% endif %}
+
                 <a href="{% url 'discovery:skills' %}"
                    class="btn btn-outline-primary w-100">
-
                     Manage skills
-
                 </a>
 
             </section>

@@ -1,26 +1,180 @@
 <header>
-  <nav class="navbar navbar-expand-lg border-bottom" aria-label="Primary navigation">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">ProjectMate</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-      <div class="collapse navbar-collapse" id="main-nav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{% url 'discovery:search' %}">Browse projects</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'discovery:people' %}">Find teammates</a></li>
-        </ul>
-        <form class="d-flex me-3" method="get" action="{% url 'discovery:search' %}">
-          <label class="visually-hidden" for="nav-search">Search projects</label>
-          <input class="form-control form-control-sm me-2" id="nav-search" name="q" placeholder="Search projects">
-          <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
-        </form>
-        {% if user.is_authenticated %}
-          <a class="me-2 small" href="{% url 'teams:request_inbox' %}">Requests{% if pending_requests_count %} <span class="badge text-bg-warning">{{ pending_requests_count }}</span>{% endif %}</a>
-          <span class="me-2 text-muted small">Hi, {{ user.first_name|default:user.username }}</span>
-          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Log out</button></form>
-        {% else %}
-          <a class="btn btn-sm btn-primary" href="{% url 'accounts:login' %}">Log in</a>
-        {% endif %}
-      </div>
-    </div>
-  </nav>
+    <nav class="navbar navbar-expand-lg border-bottom"
+         aria-label="Primary navigation">
+
+        <div class="container">
+
+            <a class="navbar-brand fw-bold"
+               href="{% url 'core:home' %}">
+                ProjectMate
+            </a>
+
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#main-nav"
+                    aria-controls="main-nav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="main-nav">
+
+                <!-- Main navigation -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{% url 'discovery:search' %}">
+                            Browse projects
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="{% url 'discovery:people' %}">
+                            Find teammates
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Project search -->
+                <form class="d-flex me-lg-3 mb-3 mb-lg-0"
+                      method="get"
+                      action="{% url 'discovery:search' %}">
+
+                    <label class="visually-hidden" for="nav-search">
+                        Search projects
+                    </label>
+
+                    <input class="form-control form-control-sm me-2"
+                           id="nav-search"
+                           name="q"
+                           placeholder="Search projects">
+
+                    <button class="btn btn-sm btn-outline-primary"
+                            type="submit">
+                        Search
+                    </button>
+                </form>
+
+                {% if user.is_authenticated %}
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <!-- Incoming team requests -->
+                        <a class="small text-decoration-none"
+                           href="{% url 'teams:request_inbox' %}">
+                            Requests
+
+                            {% if pending_requests_count %}
+                                <span class="badge text-bg-warning">
+                                    {{ pending_requests_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+
+                        <!-- Profile dropdown -->
+                        <div class="dropdown">
+
+                            <button type="button"
+                                    class="profile-menu-toggle"
+                                    id="profileMenuButton"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    aria-label="Open account menu">
+
+                                {% if user.profile.photo %}
+                                    <img src="{{ user.profile.photo.url }}"
+                                         alt="Profile picture"
+                                         class="navbar-avatar">
+                                {% else %}
+                                    <span class="navbar-avatar navbar-avatar-placeholder">
+                                        <i class="bi bi-person"
+                                           aria-hidden="true"></i>
+                                    </span>
+                                {% endif %}
+
+                                <i class="bi bi-chevron-down profile-menu-chevron"
+                                   aria-hidden="true"></i>
+                            </button>
+
+                            <div class="dropdown-menu dropdown-menu-end profile-dropdown"
+                                 aria-labelledby="profileMenuButton">
+
+                                <!-- Account information -->
+                                <div class="profile-dropdown-header">
+
+                                    {% if user.profile.photo %}
+                                        <img src="{{ user.profile.photo.url }}"
+                                             alt=""
+                                             class="navbar-avatar dropdown-avatar">
+                                    {% else %}
+                                        <span class="navbar-avatar navbar-avatar-placeholder dropdown-avatar">
+                                            <i class="bi bi-person"
+                                               aria-hidden="true"></i>
+                                        </span>
+                                    {% endif %}
+
+                                    <div class="profile-dropdown-user">
+                                        <div class="fw-semibold text-truncate">
+                                            {{ user.get_full_name|default:user.username }}
+                                        </div>
+
+                                        <div class="small text-muted text-truncate">
+                                            {{ user.email }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="dropdown-divider">
+
+                                <!-- Profile navigation -->
+                                <a class="dropdown-item profile-menu-item"
+                                   href="{% url 'accounts:profile' user.username %}">
+                                    <i class="bi bi-person-circle"
+                                       aria-hidden="true"></i>
+                                    View Profile
+                                </a>
+
+                                <a class="dropdown-item profile-menu-item"
+                                   href="{% url 'accounts:profile_edit' %}">
+                                    <i class="bi bi-pencil-square"
+                                       aria-hidden="true"></i>
+                                    Edit Profile
+                                </a>
+
+                                <hr class="dropdown-divider">
+
+                                <!-- Logout requires a POST request -->
+                                <form method="post"
+                                      action="{% url 'accounts:logout' %}"
+                                      class="m-0">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit"
+                                            class="dropdown-item profile-menu-item text-danger">
+                                        <i class="bi bi-box-arrow-right"
+                                           aria-hidden="true"></i>
+                                        Log out
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+
+                    <a class="btn btn-sm btn-primary"
+                       href="{% url 'accounts:login' %}">
+                        Log in
+                    </a>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </nav>
 </header>
