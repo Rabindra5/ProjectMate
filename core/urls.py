@@ -1,9 +1,11 @@
+
 """Core URL routes."""
 
 from django.urls import path
 from . import views
 
 app_name = "core"
+
 urlpatterns = [
     path("", views.IndexView.as_view(), name="home"),
     path("about/", views.AboutView.as_view(), name="about"),
@@ -14,4 +16,21 @@ urlpatterns = [
     path("faq/", views.FaqView.as_view(), name="faq"),
     path("styleguide/", views.StyleguideView.as_view(), name="styleguide"),
     path("theme/", views.set_theme, name="set_theme"),
+
+    # Notification routes
+    path(
+        "notifications/",
+        views.NotificationListView.as_view(),
+        name="notifications",
+    ),
+    path(
+        "notifications/read-all/",
+        views.NotificationReadAllView.as_view(),
+        name="notification_read_all",
+    ),
+    path(
+        "notifications/<int:pk>/read/",
+        views.NotificationReadView.as_view(),
+        name="notification_read",
+    ),
 ]
