@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy | ProjectMate{% endblock %}
+
+{% block content %}
+<section class="container py-5" style="max-width: 850px;">
+
+    <header class="mb-4">
+        <h1 class="fw-bold">Privacy policy</h1>
+        <p class="text-body-secondary">
+            How ProjectMate handles your information.
+        </p>
+    </header>
+
+    <div class="card rounded-4 p-4 p-md-5">
+
+        <h2 class="h5 fw-bold">Overview</h2>
+        <p class="text-body-secondary mb-4">
+            ProjectMate is an academic project developed by Group 15
+            at the University of Windsor for COMP-8347.
+            We respect your privacy and aim to provide a responsible
+            environment for student collaboration.
+        </p>
+
+        <h2 class="h5 fw-bold">Information we collect</h2>
+        <p class="text-body-secondary">
+            ProjectMate may collect information that you provide or
+            generate while using the platform, including:
+        </p>
+
+        <ul class="text-body-secondary mb-4">
+            <li>Account and profile information.</li>
+            <li>Technical skills and project information.</li>
+            <li>Team memberships and join requests.</li>
+            <li>Search and browsing activity.</li>
+        </ul>
+
+        <h2 class="h5 fw-bold">How we use your information</h2>
+        <p class="text-body-secondary mb-4">
+            Information is used to support account management,
+            project discovery, teammate searches, recommendations
+            and collaboration within ProjectMate.
+        </p>
+
+        <h2 class="h5 fw-bold">Cookies and sessions</h2>
+        <p class="text-body-secondary mb-4">
+            ProjectMate uses cookies and sessions to maintain login
+            sessions, remember preferences and support website
+            functionality.
+        </p>
+
+        <h2 class="h5 fw-bold">Your information</h2>
+        <p class="text-body-secondary mb-4">
+            You can manage your profile and skills through your account
+            settings. Please avoid sharing sensitive personal or
+            confidential information in publicly visible project content.
+        </p>
+
+        <h2 class="h5 fw-bold">Contact us</h2>
+        <p class="text-body-secondary mb-0">
+            If you have questions about privacy, please contact
+            a member of our
+            <a href="{% url 'core:contact' %}">ProjectMate team</a>.
+        </p>
+
+    </div>
+
+</section>
+{% endblock %}

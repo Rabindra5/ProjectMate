@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}About Us | ProjectMate{% endblock %}
+
+{% block content %}
+<style>
+  .about-page {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .about-card {
+    background: var(--bs-emphasis-color);
+    background: #ffffff;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1.2rem;
+    padding: 2rem;
+  }
+
+  .team-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #e5eaff;
+    color: #404bd4;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+  }
+
+  .team-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+  }
+</style>
+
+<section class="container py-5 about-page">
+
+  <header class="text-center mb-5">
+    <p class="text-primary fw-semibold small text-uppercase">
+      COMP-8347 · Group 15
+    </p>
+
+    <h1 class="display-5 fw-bold">About ProjectMate</h1>
+
+    <p class="lead text-body-secondary">
+      Connecting students. Creating opportunities.
+      Building together.
+    </p>
+  </header>
+
+  <div class="about-card mb-5">
+    <h2 class="h4 fw-bold mb-3">Our project</h2>
+
+    <p class="text-body-secondary">
+      ProjectMate is a student collaboration platform developed
+      at the University of Windsor. It provides a centralized
+      space for students to discover projects, showcase their
+      skills, find teammates and collaborate on shared ideas.
+    </p>
+
+    <p class="text-body-secondary mb-0">
+      Our goal is to make project discovery and team formation
+      simpler, more accessible and more efficient for students
+      with diverse interests and technical backgrounds.
+    </p>
+  </div>
+
+  <header class="text-center mb-4">
+    <h2 class="fw-bold">Meet our team</h2>
+    <p class="text-body-secondary">
+      The students behind ProjectMate.
+    </p>
+  </header>
+
+  <div class="row justify-content-center g-4">
+
+    <div class="col-md-6 col-lg-4">
+      <article class="about-card team-card text-center h-100">
+        <div class="team-avatar">DA</div>
+        <h3 class="h5 fw-bold">Dipesh Adhikari</h3>
+        <p class="text-primary small fw-semibold">
+          Project Management
+        </p>
+        <p class="text-body-secondary small mb-0">
+          Project creation, editing, lifecycle management
+          and project updates.
+        </p>
+      </article>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <article class="about-card team-card text-center h-100">
+        <div class="team-avatar">SK</div>
+        <h3 class="h5 fw-bold">Sudina K C</h3>
+        <p class="text-primary small fw-semibold">
+          Discovery &amp; Recommendations
+        </p>
+        <p class="text-body-secondary small mb-0">
+          Project search, skill management, discovery
+          and similar project recommendations.
+        </p>
+      </article>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <article class="about-card team-card text-center h-100">
+        <div class="team-avatar">BO</div>
+        <h3 class="h5 fw-bold">Babita Oli</h3>
+        <p class="text-primary small fw-semibold">
+          Team Management
+        </p>
+        <p class="text-body-secondary small mb-0">
+          Team memberships, join requests
+          and project owner decisions.
+        </p>
+      </article>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <article class="about-card team-card text-center h-100">
+        <div class="team-avatar">PO</div>
+        <h3 class="h5 fw-bold">Peter Olusegun-Ebode</h3>
+        <p class="text-primary small fw-semibold">
+          Activity &amp; Resources
+        </p>
+        <p class="text-body-secondary small mb-0">
+          Sessions, browsing history, cookies
+          and project resources.
+        </p>
+      </article>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <article class="about-card team-card text-center h-100">
+        <div class="team-avatar">RP</div>
+        <h3 class="h5 fw-bold">Rabindra Pangeni</h3>
+        <p class="text-primary small fw-semibold">
+          Accounts &amp; Authentication
+        </p>
+        <p class="text-body-secondary small mb-0">
+          User authentication, profiles
+          and account management.
+        </p>
+      </article>
+    </div>
+
+  </div>
+
+</section>
+
+{% endblock %}

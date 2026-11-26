@@ -1,3 +1,15 @@
+<style>
+  .navbar .nav-link.pm-nav-active {
+    background-color: #f1eee6;
+    color: #526074;
+  }
+
+  [data-bs-theme="dark"] .navbar .nav-link.pm-nav-active {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+  }
+</style>
+
 <header>
   <nav class="navbar navbar-expand-xl border-bottom" aria-label="Primary navigation">
     <div class="container">
@@ -22,12 +34,12 @@
         <!-- Main navigation -->
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'discovery:search' %}">
+            <a class="nav-link px-3 py-2 rounded-3 {% if request.resolver_match.view_name == 'discovery:search' or request.resolver_match.view_name == 'projects:list' or request.resolver_match.view_name == 'projects:detail' %}pm-nav-active{% endif %}" href="{% url 'discovery:search' %}">
               Browse projects
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'discovery:people' %}">
+            <a class="nav-link px-3 py-2 rounded-3 {% if request.resolver_match.view_name == 'discovery:people' %}pm-nav-active{% endif %}" href="{% url 'discovery:people' %}">
               Find teammates
             </a>
           </li>
