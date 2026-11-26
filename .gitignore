@@ -6,6 +6,7 @@ db.sqlite3
 .idea/
 .vscode/
 media/*
+private_media/
 !media/seed/
 staticfiles/
 sent_emails/
