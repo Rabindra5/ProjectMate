@@ -1,180 +1,316 @@
 <header>
-    <nav class="navbar navbar-expand-lg border-bottom"
-         aria-label="Primary navigation">
+  <nav class="navbar navbar-expand-xl border-bottom" aria-label="Primary navigation">
+    <div class="container">
 
-        <div class="container">
+      <!-- Brand -->
+      <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">
+        ProjectMate
+      </a>
 
-            <a class="navbar-brand fw-bold"
-               href="{% url 'core:home' %}">
-                ProjectMate
+      <!-- Mobile navigation toggle -->
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#main-nav"
+              aria-controls="main-nav"
+              aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="main-nav">
+
+        <!-- Main navigation -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'discovery:search' %}">
+              Browse projects
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'discovery:people' %}">
+              Find teammates
+            </a>
+          </li>
+        </ul>
+
+        <!-- Search -->
+        <form class="d-flex me-lg-3 mb-3 mb-lg-0"
+              method="get"
+              action="{% url 'discovery:search' %}">
+          <label class="visually-hidden" for="nav-search">
+            Search projects
+          </label>
+          <input class="form-control form-control-sm me-2"
+                 id="nav-search"
+                 name="q"
+                 placeholder="Search projects">
+          <button class="btn btn-sm btn-outline-primary" type="submit">
+            Search
+          </button>
+        </form>
+
+        {% if user.is_authenticated %}
+
+          <div class="d-flex align-items-center flex-wrap gap-3">
+
+            <!-- Join requests -->
+            <a class="small text-decoration-none"
+               href="{% url 'teams:request_inbox' %}">
+              Requests
+              {% if pending_requests_count %}
+                <span class="badge text-bg-warning">
+                  {{ pending_requests_count }}
+                </span>
+              {% endif %}
             </a>
 
-            <button class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#main-nav"
-                    aria-controls="main-nav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Notification dropdown -->
+            <div class="dropdown">
 
-            <div class="collapse navbar-collapse" id="main-nav">
+              <button class="btn btn-link position-relative text-body p-2"
+                      type="button"
+                      id="notificationDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      aria-label="Notifications, {{ unread_notifications_count }} unread">
 
-                <!-- Main navigation -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="{% url 'discovery:search' %}">
-                            Browse projects
-                        </a>
-                    </li>
+                <i class="bi bi-bell fs-5" aria-hidden="true"></i>
 
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="{% url 'discovery:people' %}">
-                            Find teammates
-                        </a>
-                    </li>
-                </ul>
+                {% if unread_notifications_count %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {% if unread_notifications_count > 99 %}
+                      99+
+                    {% else %}
+                      {{ unread_notifications_count }}
+                    {% endif %}
+                  </span>
+                {% endif %}
 
-                <!-- Project search -->
-                <form class="d-flex me-lg-3 mb-3 mb-lg-0"
-                      method="get"
-                      action="{% url 'discovery:search' %}">
+              </button>
 
-                    <label class="visually-hidden" for="nav-search">
-                        Search projects
-                    </label>
+              <div class="dropdown-menu dropdown-menu-lg-end shadow rounded-3 p-0"
+                   aria-labelledby="notificationDropdown"
+                   style="width: 340px; max-width: calc(100vw - 2rem);">
 
-                    <input class="form-control form-control-sm me-2"
-                           id="nav-search"
-                           name="q"
-                           placeholder="Search projects">
+                <!-- Dropdown header -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                  <span class="fw-semibold">Notifications</span>
 
-                    <button class="btn btn-sm btn-outline-primary"
-                            type="submit">
-                        Search
-                    </button>
-                </form>
+                  {% if unread_notifications_count %}
+                    <span class="badge text-bg-primary">
+                      {{ unread_notifications_count }} unread
+                    </span>
+                  {% endif %}
+                </div>
 
-                {% if user.is_authenticated %}
+                <!-- Recent notifications -->
+                <div style="max-height: 360px; overflow-y: auto;">
 
-                    <div class="d-flex align-items-center gap-3">
+                  {% for notification in recent_notifications %}
 
-                        <!-- Incoming team requests -->
-                        <a class="small text-decoration-none"
-                           href="{% url 'teams:request_inbox' %}">
-                            Requests
+                    <form method="post"
+                          action="{% url 'core:notification_read' notification.pk %}"
+                          class="m-0 border-bottom">
 
-                            {% if pending_requests_count %}
-                                <span class="badge text-bg-warning">
-                                    {{ pending_requests_count }}
-                                </span>
+                      {% csrf_token %}
+
+                      <button type="submit"
+                              class="dropdown-item text-wrap p-3 {% if not notification.is_read %}bg-primary bg-opacity-10{% endif %}">
+
+                        <div class="d-flex align-items-start gap-2">
+
+                          <!-- Notification icon -->
+                          <div class="flex-shrink-0">
+
+                            {% if notification.notification_type == "request_accepted" %}
+                              <i class="bi bi-check-circle-fill text-success fs-5"></i>
+
+                            {% elif notification.notification_type == "request_rejected" %}
+                              <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+
+                            {% elif notification.notification_type == "request_received" %}
+                              <i class="bi bi-person-plus-fill text-primary fs-5"></i>
+
+                            {% elif notification.notification_type == "member_removed" %}
+                              <i class="bi bi-person-dash-fill text-danger fs-5"></i>
+
+                            {% else %}
+                              <i class="bi bi-bell text-primary fs-5"></i>
                             {% endif %}
-                        </a>
 
-                        <!-- Profile dropdown -->
-                        <div class="dropdown">
+                          </div>
 
-                            <button type="button"
-                                    class="profile-menu-toggle"
-                                    id="profileMenuButton"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    aria-label="Open account menu">
+                          <!-- Notification content -->
+                          <div class="flex-grow-1" style="min-width: 0;">
 
-                                {% if user.profile.photo %}
-                                    <img src="{{ user.profile.photo.url }}"
-                                         alt="Profile picture"
-                                         class="navbar-avatar">
-                                {% else %}
-                                    <span class="navbar-avatar navbar-avatar-placeholder">
-                                        <i class="bi bi-person"
-                                           aria-hidden="true"></i>
-                                    </span>
-                                {% endif %}
+                            <div class="d-flex justify-content-between align-items-start gap-2">
 
-                                <i class="bi bi-chevron-down profile-menu-chevron"
+                              <span class="small fw-semibold text-break">
+                                {{ notification.title }}
+                              </span>
+
+                              {% if not notification.is_read %}
+                                <span class="rounded-circle bg-primary flex-shrink-0"
+                                      style="width: 8px; height: 8px; margin-top: 6px;"
+                                      aria-label="Unread"></span>
+                              {% endif %}
+
+                            </div>
+
+                            <div class="small text-muted mt-1 text-break">
+                              {{ notification.message|truncatechars:100 }}
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                              {{ notification.created_at|timesince }} ago
+                            </div>
+
+                          </div>
+                        </div>
+
+                      </button>
+                    </form>
+
+                  {% empty %}
+
+                    <div class="text-center p-4">
+                      <i class="bi bi-bell-slash fs-2 text-muted"></i>
+                      <p class="small text-muted mt-2 mb-0">
+                        No notifications yet.
+                      </p>
+                    </div>
+
+                  {% endfor %}
+
+                </div>
+
+                <!-- Dropdown footer -->
+                <div class="p-3">
+
+                  {% if unread_notifications_count %}
+                    <form method="post"
+                          action="{% url 'core:notification_read_all' %}"
+                          class="mb-2">
+                      {% csrf_token %}
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-primary w-100">
+                        Mark all as read
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <a class="btn btn-sm btn-primary w-100"
+                     href="{% url 'core:notifications' %}">
+                    View all notifications
+                  </a>
+
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Profile dropdown -->
+            <div class="dropdown">
+
+                <button type="button"
+                        class="profile-menu-toggle"
+                        id="profileMenuButton"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        aria-label="Open account menu">
+
+                    {% if user.profile.photo %}
+                        <img src="{{ user.profile.photo.url }}"
+                             alt="Profile picture"
+                             class="navbar-avatar">
+                    {% else %}
+                        <span class="navbar-avatar navbar-avatar-placeholder">
+                            <i class="bi bi-person"
+                               aria-hidden="true"></i>
+                        </span>
+                    {% endif %}
+
+                    <i class="bi bi-chevron-down profile-menu-chevron"
+                       aria-hidden="true"></i>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end profile-dropdown"
+                     aria-labelledby="profileMenuButton">
+
+                    <!-- Account information -->
+                    <div class="profile-dropdown-header">
+
+                        {% if user.profile.photo %}
+                            <img src="{{ user.profile.photo.url }}"
+                                 alt=""
+                                 class="navbar-avatar dropdown-avatar">
+                        {% else %}
+                            <span class="navbar-avatar navbar-avatar-placeholder dropdown-avatar">
+                                <i class="bi bi-person"
                                    aria-hidden="true"></i>
-                            </button>
+                            </span>
+                        {% endif %}
 
-                            <div class="dropdown-menu dropdown-menu-end profile-dropdown"
-                                 aria-labelledby="profileMenuButton">
+                        <div class="profile-dropdown-user">
+                            <div class="fw-semibold text-truncate">
+                                {{ user.get_full_name|default:user.username }}
+                            </div>
 
-                                <!-- Account information -->
-                                <div class="profile-dropdown-header">
-
-                                    {% if user.profile.photo %}
-                                        <img src="{{ user.profile.photo.url }}"
-                                             alt=""
-                                             class="navbar-avatar dropdown-avatar">
-                                    {% else %}
-                                        <span class="navbar-avatar navbar-avatar-placeholder dropdown-avatar">
-                                            <i class="bi bi-person"
-                                               aria-hidden="true"></i>
-                                        </span>
-                                    {% endif %}
-
-                                    <div class="profile-dropdown-user">
-                                        <div class="fw-semibold text-truncate">
-                                            {{ user.get_full_name|default:user.username }}
-                                        </div>
-
-                                        <div class="small text-muted text-truncate">
-                                            {{ user.email }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr class="dropdown-divider">
-
-                                <!-- Profile navigation -->
-                                <a class="dropdown-item profile-menu-item"
-                                   href="{% url 'accounts:profile' user.username %}">
-                                    <i class="bi bi-person-circle"
-                                       aria-hidden="true"></i>
-                                    View Profile
-                                </a>
-
-                                <a class="dropdown-item profile-menu-item"
-                                   href="{% url 'accounts:profile_edit' %}">
-                                    <i class="bi bi-pencil-square"
-                                       aria-hidden="true"></i>
-                                    Edit Profile
-                                </a>
-
-                                <hr class="dropdown-divider">
-
-                                <!-- Logout requires a POST request -->
-                                <form method="post"
-                                      action="{% url 'accounts:logout' %}"
-                                      class="m-0">
-
-                                    {% csrf_token %}
-
-                                    <button type="submit"
-                                            class="dropdown-item profile-menu-item text-danger">
-                                        <i class="bi bi-box-arrow-right"
-                                           aria-hidden="true"></i>
-                                        Log out
-                                    </button>
-                                </form>
-
+                            <div class="small text-muted text-truncate">
+                                {{ user.email }}
                             </div>
                         </div>
                     </div>
 
-                {% else %}
+                    <hr class="dropdown-divider">
 
-                    <a class="btn btn-sm btn-primary"
-                       href="{% url 'accounts:login' %}">
-                        Log in
+                    <!-- Profile navigation -->
+                    <a class="dropdown-item profile-menu-item"
+                       href="{% url 'accounts:profile' user.username %}">
+                        <i class="bi bi-person-circle"
+                           aria-hidden="true"></i>
+                        View Profile
                     </a>
 
-                {% endif %}
+                    <a class="dropdown-item profile-menu-item"
+                       href="{% url 'accounts:profile_edit' %}">
+                        <i class="bi bi-pencil-square"
+                           aria-hidden="true"></i>
+                        Edit Profile
+                    </a>
 
+                    <hr class="dropdown-divider">
+
+                    <!-- Logout requires a POST request -->
+                    <form method="post"
+                          action="{% url 'accounts:logout' %}"
+                          class="m-0">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="dropdown-item profile-menu-item text-danger">
+                            <i class="bi bi-box-arrow-right"
+                               aria-hidden="true"></i>
+                            Log out
+                        </button>
+                    </form>
+
+                </div>
             </div>
-        </div>
-    </nav>
+
+          </div>
+
+        {% else %}
+
+          <a class="btn btn-sm btn-primary"
+             href="{% url 'accounts:login' %}">
+            Log in
+          </a>
+
+        {% endif %}
+
+      </div>
+    </div>
+  </nav>
 </header>

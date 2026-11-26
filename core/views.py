@@ -1,18 +1,22 @@
+
 """Shared shell views and public pages."""
 
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.generic import FormView, TemplateView
+from django.views import View
+from django.views.generic import FormView, TemplateView, ListView
 
 from .forms import BootstrapFormMixin
-from .models import ContactMessage
+from .models import ContactMessage, Notification
 from .team_data import TEAM_MEMBERS
+
 
 
 class SafePaginationMixin:
@@ -34,15 +38,9 @@ class SafePaginationMixin:
 
 
 class IndexView(TemplateView):
-    """Show the landing page or open the signed-in user's profile."""
+    """Show the ProjectMate homepage."""
 
     template_name = "core/home.html"
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect("accounts:profile", username=request.user.get_username())
-        return super().get(request, *args, **kwargs)
-
 
 class AboutView(TemplateView):
     """Explain the ProjectMate mission and workflow."""
@@ -209,3 +207,68 @@ def error_404(request, exception):
 def error_500(request):
     """Return a server-error response."""
     return HttpResponseServerError("Something went wrong")
+
+
+
+class NotificationListView(LoginRequiredMixin, ListView):
+    """Display notifications belonging to the authenticated user."""
+
+    model = Notification
+    template_name = "core/notifications.html"
+    context_object_name = "notifications"
+    paginate_by = 10
+
+    def get_queryset(self):
+        """Return only the current user's notifications."""
+        return Notification.objects.filter(
+            recipient=self.request.user,
+        ).order_by("-created_at", "-pk")
+
+
+class NotificationReadView(LoginRequiredMixin, View):
+    """Mark an individual notification as read."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk, *args, **kwargs):
+        """Mark an owned notification as read and open its destination."""
+
+        notification = get_object_or_404(
+            Notification,
+            pk=pk,
+            recipient=request.user,
+        )
+
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save(update_fields=["is_read"])
+
+        if (
+            notification.link
+            and notification.link.startswith("/")
+            and not notification.link.startswith("//")
+            and url_has_allowed_host_and_scheme(
+                notification.link,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            )
+        ):
+            return redirect(notification.link)
+
+        return redirect("core:notifications")
+
+
+class NotificationReadAllView(LoginRequiredMixin, View):
+    """Mark all notifications belonging to the current user as read."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        """Update unread notifications for the authenticated user."""
+
+        Notification.objects.filter(
+            recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        return redirect("core:notifications")
