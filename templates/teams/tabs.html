@@ -1,11 +1,6 @@
-<style>
-    .team-tabs .nav-link { color: var(--pm-muted); font-weight: 600; }
-    .team-tabs .nav-link:hover { color: var(--pm-primary); }
-    .team-tabs .nav-link.active { background-color: var(--pm-primary); color: #fff; }
-</style>
 <ul class="nav nav-pills team-tabs gap-2 mb-4" aria-label="Request views">
     <li class="nav-item">
-        <a class="nav-link rounded-3 {% if active_tab == 'inbox' %}active{% endif %}"
+        <a class="nav-link {% if active_tab == 'inbox' %}active{% endif %}"
            {% if active_tab == 'inbox' %}aria-current="page"{% endif %}
            href="{% url 'teams:request_inbox' %}">
             <i class="bi bi-inbox me-1" aria-hidden="true"></i>Received
@@ -13,7 +8,7 @@
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link rounded-3 {% if active_tab == 'sent' %}active{% endif %}"
+        <a class="nav-link {% if active_tab == 'sent' %}active{% endif %}"
            {% if active_tab == 'sent' %}aria-current="page"{% endif %}
            href="{% url 'teams:my_requests' %}">
             <i class="bi bi-send me-1" aria-hidden="true"></i>Sent

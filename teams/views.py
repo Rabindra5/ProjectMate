@@ -66,7 +66,7 @@ class MySentRequestsView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Load projects with each request."""
-        return JoinRequest.objects.filter(applicant=self.request.user).select_related("project")
+        return JoinRequest.objects.filter(applicant=self.request.user).select_related("project__category", "project__owner")
 
     def get_context_data(self, **kwargs):
         """Mark the active requests tab."""
