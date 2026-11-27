@@ -13,7 +13,7 @@
         <!-- Breadcrumb -->
         <nav class="mb-4" aria-label="Breadcrumb">
             <div class="project-breadcrumb">
-                <a href="{% url 'projects:list' %}">
+                <a href="{% url 'discovery:search' %}">
                     Browse projects
                 </a>
                 <span>/</span>
@@ -214,70 +214,177 @@
             </div>
 
             <!-- RIGHT COLUMN -->
-            <div class="col-lg-4">
 
-                {% if not user.is_authenticated %}
+<!-- RIGHT COLUMN -->
 
-                    <div class="project-detail-card">
-                        <h2 class="project-card-heading">
-                            Interested in joining?
-                        </h2>
+<!-- RIGHT COLUMN -->
+<div class="col-lg-4">
 
-                        <p class="text-muted small">
-                            Log in to request to join this project.
-                        </p>
+    {% if not user.is_authenticated %}
 
-                        <a href="{% url 'accounts:login' %}"
-                           class="btn btn-primary w-100">
-                            Log in
-                        </a>
-                    </div>
+        <div class="project-detail-card">
 
-                {% elif user != object.owner and not user.is_staff %}
+            <h2 class="project-card-heading">
+                Interested in joining?
+            </h2>
 
-                    <div class="project-detail-card">
-                        <h2 class="project-card-heading">
-                            Request to join
-                        </h2>
+            <p class="text-muted small mb-3">
+                Log in to request to join this project.
+            </p>
 
-                        <p class="text-muted small mb-3">
-                            Interested in contributing to this project?
-                        </p>
+            <a href="{% url 'accounts:login' %}"
+               class="btn btn-primary w-100">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Log in
+            </a>
 
+        </div>
 
-                        {% if object.is_open %}
+    {% elif user != object.owner and not user.is_staff %}
 
-                            <p class="text-muted small mb-3">
-                                This project is accepting new members.
-                            </p>
+        <div class="project-detail-card">
 
-                            <a href="{% url 'teams:apply' object.slug %}"
-                               class="btn btn-primary w-100">
-                                <i class="bi bi-send me-2"></i>
-                                Request to join
-                            </a>
+            {% if is_member %}
 
-                            <p class="text-muted small mt-3 mb-0">
-                                <i class="bi bi-lock me-1"></i>
-                                Your application will be reviewed by the project owner.
-                            </p>
+                <h2 class="project-card-heading">
+                    Project membership
+                </h2>
 
-                        {% else %}
+                <p class="text-muted small mb-3">
+                    You are a member of this project.
+                </p>
 
-                            <p class="text-muted small mb-0">
-                                This project is not accepting new members.
-                            </p>
+                <a href="{% url 'teams:team' object.slug %}"
+                   class="btn btn-primary w-100">
+                    <i class="bi bi-people me-2"></i>
+                    View Team
+                </a>
 
-                        {% endif %}
+            {% elif pending_request %}
 
+                <h2 class="project-card-heading">
+                    Request submitted
+                </h2>
 
+                <p class="text-muted small mb-3">
+                    Your request has been submitted and is
+                    awaiting review by the project owner.
+                </p>
+
+                <button type="button"
+                        class="btn btn-outline-warning w-100"
+                        disabled
+                        aria-disabled="true">
+
+                    <i class="bi bi-clock-history me-2"></i>
+                    Request Pending
+
+                </button>
+
+                <p class="text-muted small mt-3 mb-3">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    Submitted on
+                    {{ pending_request.created_at|date:"M j, Y" }}
+                </p>
+
+                <a href="{% url 'teams:my_requests' %}"
+                   class="btn btn-outline-primary w-100">
+
+                    <i class="bi bi-list-check me-2"></i>
+                    View My Requests
+
+                </a>
+
+            {% elif object.status == 'completed' %}
+
+                <h2 class="project-card-heading">
+                    Project completed
+                </h2>
+
+                <p class="text-muted small mb-3">
+                    This project has been completed and is
+                    no longer accepting new members.
+                </p>
+
+                <button type="button"
+                        class="btn btn-outline-secondary w-100"
+                        disabled
+                        aria-disabled="true">
+
+                    <i class="bi bi-check-circle me-2"></i>
+                    Project Completed
+
+                </button>
+
+            {% elif not object.is_open %}
+
+                <h2 class="project-card-heading">
+                    Recruitment closed
+                </h2>
+
+                <p class="text-muted small mb-3">
+                    This project is not accepting new members.
+                </p>
+
+                <button type="button"
+                        class="btn btn-outline-secondary w-100"
+                        disabled
+                        aria-disabled="true">
+
+                    <i class="bi bi-lock me-2"></i>
+                    Not Accepting Requests
+
+                </button>
+
+            {% else %}
+
+                <h2 class="project-card-heading">
+                    Request to join
+                </h2>
+
+                {% if join_request_status == 'rejected' %}
+
+                    <div class="alert alert-danger small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Your previous join request was rejected.
                     </div>
 
                 {% endif %}
 
-                {% similar_projects object %}
+                <p class="text-muted small mb-3">
+                    This project is accepting new members.
+                </p>
 
-            </div>
+                <a href="{% url 'teams:apply' object.slug %}"
+                   class="btn btn-primary w-100">
+
+                    <i class="bi bi-send me-2"></i>
+
+                    {% if join_request_status == 'rejected' %}
+                        Request to Join Again
+                    {% else %}
+                        Request to Join
+                    {% endif %}
+
+                </a>
+
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-lock me-1"></i>
+                    Your request will be reviewed by the
+                    project owner.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+    <!-- Similar project recommendations -->
+    {% similar_projects object %}
+
+</div>
+
 
         </div>
 

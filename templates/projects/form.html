@@ -110,7 +110,7 @@
 
             <div class="d-flex justify-content-end gap-2">
                 <a class="btn btn-outline-secondary"
-                   href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'projects:list' %}{% endif %}">
+                   href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'discovery:search' %}{% endif %}">
                     Cancel
                 </a>
                 <button class="btn btn-primary" type="submit">

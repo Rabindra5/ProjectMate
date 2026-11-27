@@ -9,26 +9,12 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from activity.services import record_project_view
-
+from teams.models import JoinRequest, Membership
 from .forms import ProjectForm
 from .models import Project
 
 logger = logging.getLogger(__name__)
 
-
-class ProjectListView(ListView):
-    """Display projects ordered by newest first."""
-
-    model = Project
-    template_name = "projects/list.html"
-    context_object_name = "projects"
-    paginate_by = 9
-
-    def get_queryset(self):
-        return (
-            Project.objects.select_related("owner", "category")
-            .prefetch_related("required_skills")
-        )
 
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
@@ -56,6 +42,37 @@ class ProjectDetailView(DetailView):
             Project.objects.select_related("owner", "category")
             .prefetch_related("required_skills", "updates__author")
         )
+
+    def get_context_data(self, **kwargs):
+        """Provide membership and join request information."""
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        project = self.object
+
+        context["is_member"] = False
+        context["pending_request"] = None
+        context["join_request_status"] = None
+
+        if user.is_authenticated and project.owner_id != user.id:
+
+            context["is_member"] = Membership.objects.filter(
+                project=project,
+                user=user,
+            ).exists()
+
+            latest_request = JoinRequest.objects.filter(
+                project=project,
+                applicant=user,
+            ).order_by("-created_at", "-pk").first()
+
+            if latest_request:
+                context["join_request_status"] = latest_request.status
+
+                if latest_request.status == "pending":
+                    context["pending_request"] = latest_request
+
+        return context
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
@@ -105,7 +122,7 @@ class ProjectDeleteView(LoginRequiredMixin, ProjectOwnerMixin, DeleteView):
 
     model = Project
     template_name = "projects/confirm_delete.html"
-    success_url = reverse_lazy("projects:list")
+    success_url = reverse_lazy("discovery:search")
     slug_url_kwarg = "slug"
 
     def post(self, request, *args, **kwargs):
