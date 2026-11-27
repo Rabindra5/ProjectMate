@@ -3,70 +3,84 @@
 {% block title %}My requests | ProjectMate{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+{% include "teams/styles.html" %}
+
+<section class="requests-browse py-5">
+  <div class="container-xxl px-3 px-lg-4">
     <header class="mb-4">
-        <h1 class="fw-bold mb-2">Join requests</h1>
-        <p class="text-body-secondary mb-0">
-            {% if requests %}
-                {{ requests|length }} request{{ requests|length|pluralize }} you've sent
-            {% else %}
-                You haven't sent any requests yet
-            {% endif %}
-        </p>
+      <h1 class="fw-bold mb-2">Join requests</h1>
+      <p class="text-body-secondary mb-0">
+        {% if requests %}
+          {{ requests|length }} request{{ requests|length|pluralize }} you've sent
+        {% else %}
+          You haven't sent any requests yet
+        {% endif %}
+      </p>
     </header>
 
     {% include "teams/tabs.html" %}
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-        {% for request in requests %}
-            <div class="col">
-                <article class="card rounded-4 p-4 h-100 d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <span class="small text-body-secondary">Sent {{ request.created_at|date:"M j, Y" }}</span>
-                        <span class="badge rounded-pill
-                            {% if request.status == 'pending' %}bg-warning-subtle text-warning-emphasis
-                            {% elif request.status == 'accepted' %}bg-success-subtle text-success-emphasis
-                            {% elif request.status == 'rejected' or request.status == 'removed' %}bg-danger-subtle text-danger-emphasis
-                            {% else %}bg-body-tertiary text-body-secondary{% endif %}">
-                            {{ request.get_status_display }}
-                        </span>
-                    </div>
-
-                    <h2 class="h5 fw-bold mb-2">
-                        <a class="link-body-emphasis text-decoration-none" href="{{ request.project.get_absolute_url }}">
-                            {{ request.project.title }}
-                        </a>
-                    </h2>
-
-                    <p class="text-body-secondary small mb-3">{{ request.message|truncatechars:140 }}</p>
-
-                    {% if request.decision_note %}
-                        <div class="bg-body-tertiary rounded-3 p-3 small mb-3">
-                            <span class="fw-semibold d-block mb-1">Owner's note</span>
-                            {{ request.decision_note }}
-                        </div>
-                    {% endif %}
-
-                    <div class="mt-auto">
-                        {% if request.status == "pending" %}
-                            <form method="post" action="{% url 'teams:withdraw' request.pk %}">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger rounded-3" type="submit">Withdraw</button>
-                            </form>
-                        {% elif request.status == "accepted" %}
-                            <a class="btn btn-sm btn-outline-primary rounded-3" href="{% url 'teams:team' request.project.slug %}">View team</a>
-                        {% endif %}
-                    </div>
-                </article>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-lg-4">
+      {% for request in requests %}
+        <div class="col">
+          <article class="browse-panel p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+              <small class="text-body-secondary text-uppercase fw-semibold text-truncate">
+                {{ request.project.category.name }}
+              </small>
+              <span class="browse-chip small fw-semibold flex-shrink-0
+                {% if request.status == 'pending' %}chip-warning
+                {% elif request.status == 'accepted' %}chip-success
+                {% elif request.status == 'rejected' or request.status == 'removed' %}chip-danger{% endif %}">
+                {{ request.get_status_display }}
+              </span>
             </div>
-        {% empty %}
-            <div class="col-12">
-                <div class="card rounded-4">
-                    {% url 'discovery:search' as browse_url %}
-                    {% include "includes/empty_state.html" with title="No requests yet" message="Applications you send will appear here." cta_url=browse_url cta_label="Browse projects" %}
-                </div>
+
+            <h2 class="h5 fw-bold">
+              <a class="browse-title" href="{{ request.project.get_absolute_url }}">{{ request.project.title }}</a>
+            </h2>
+
+            <p class="text-body-secondary clamp-2">{{ request.message }}</p>
+
+            {% if request.decision_note %}
+              <div class="quote-box small mb-3">
+                <span class="fw-semibold d-block mb-1">Owner's note</span>
+                <span class="clamp-2">{{ request.decision_note }}</span>
+              </div>
+            {% endif %}
+
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-auto">
+              <div class="text-body-secondary small d-flex flex-wrap gap-3">
+                <span>
+                  <i class="bi bi-calendar3" aria-hidden="true"></i>
+                  Sent {{ request.created_at|date:"M j" }}
+                </span>
+                <span>
+                  <i class="bi bi-person" aria-hidden="true"></i>
+                  {{ request.project.owner.username }}
+                </span>
+              </div>
+
+              {% if request.status == "pending" %}
+                <form method="post" action="{% url 'teams:withdraw' request.pk %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Withdraw</button>
+                </form>
+              {% elif request.status == "accepted" %}
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'teams:team' request.project.slug %}">View team</a>
+              {% endif %}
             </div>
-        {% endfor %}
+          </article>
+        </div>
+      {% empty %}
+        <div class="col w-100">
+          <div class="browse-panel p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <p class="text-body-secondary mb-0">Applications you send will appear here.</p>
+            <a class="btn btn-primary px-4" href="{% url 'discovery:search' %}">Browse projects</a>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-</div>
+  </div>
+</section>
 {% endblock %}
